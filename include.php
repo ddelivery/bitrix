@@ -35,15 +35,27 @@ class CDigitalDelivery
 
             $html = GetMessage('DIGITAL_DELIVERY_PROFILE_DESCRIPTION');
 
-            $html.='
-<link rel="stylesheet" href="/ddelivery/stylesheet.css" type="text/css" media="screen" />
-<script src="/ddelivery/ddelivery.js?'.$arModuleVersion['VERSION'].'" charset="UTF-8"></script>
-';
+            $html.='';
 
-            $html = str_replace(array("\n", "\r"), array(' ', ''), $html);
         }else{
             $html = GetMessage('DIGITAL_DELIVERY_NOT_INSTALL');
         }
+
+        $html = '
+            <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+            <script type="text/javascript" src="/bitrix/components/ddelivery/static/jquery.the-modal.js"></script>
+
+            <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
+            <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
+
+            <span id="ddelivery">
+                <span><script>
+                    document.write(DDeliveryIntegration.getStatus());
+                </script></span>
+                <a href="javascript:DDeliveryIntegration.openPopup()">Выбрать</a>
+            </span>';
+        $html = str_replace(array("\n", "\r"), array(' ', ''), $html);
+
         return array(
             /* Basic description */
             "SID" => "DigitalDelivery",
@@ -104,6 +116,22 @@ class CDigitalDelivery
             $sendStatusValues[$arResult['ID']] = $arResult['NAME'];
         }
 
+        $jsHack = '<script>
+            BX.ready(function() {
+                var el = BX("bxlhe_frame_hndl_dscr_all");
+                while(el = el.parentNode) {
+                    if(el.tagName == "TR")
+                        break;
+                }
+                BX.remove(el);
+                el = document.getElementsByName("HANDLER[BASE_CURRENCY]")[0];
+                while(el = el.parentNode) {
+                    if(el.tagName == "TR")
+                        break;
+                }
+                BX.remove(el);
+            });
+        </script>';
 
         $arConfig = array(
             "CONFIG_GROUPS" => array(
@@ -117,7 +145,7 @@ class CDigitalDelivery
                     "DEFAULT" => '',
                     "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_API_KEY'),
                     "GROUP" => "general",
-                    "POST_TEXT"=> 'Ключ можно получить в личном кабинете DDelivery.ru, зарегестрировашись на сайте (для новых клиентов).',
+                    "POST_TEXT"=> 'Ключ можно получить в личном кабинете DDelivery.ru, зарегестрировашись на сайте (для новых клиентов).'.$jsHack,
                 ),
                 "TEST_MODE"=> array(
                     "TYPE" => "DROPDOWN",
@@ -136,6 +164,7 @@ class CDigitalDelivery
                     "TITLE" => 'Какой % от стоимости товара страхуется',
                     'POST_TEXT' => 'Вы можете снизить оценочную стоимость для уменьшения стоимости доставки за счет снижения размера страховки.',
                     "GROUP" => "general",
+                    'CHECK_FORMAT' => 'NUMBER',
                 ),
 
                 "SECTION_PROP" => array(
@@ -175,8 +204,8 @@ class CDigitalDelivery
         // Перебираем инфоблоки
         $cCatalog = new CCatalog();
         $res = $cCatalog->GetList();
-        while($catalog = $res->Fetch() ){
-            $key = 'IBLOCK_'.$catalog['IBLOCK_ID'];
+        while($catalog = $res->Fetch() ) {
+            $key = 'IBLOCK_'.$catalog['OFFERS_IBLOCK_ID'];
 
             $arConfig['CONFIG'][$key.'_SECTION']= array(
                 'TYPE'=>'SECTION',
@@ -185,12 +214,12 @@ class CDigitalDelivery
             );
 
             $iblockProperty = array(0 => GetMessage('DIGITAL_DELIVERY_DEFAULT'));
-            $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['IBLOCK_ID']));
+            $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['OFFERS_IBLOCK_ID']));
             while($prop = $res->Fetch()){
                 $iblockProperty[$prop['ID']] = $prop['NAME'];
             }
 
-            $arConfig['CONFIG_GROUPS'][$key] = $catalog['NAME'];
+
             foreach(array('X', 'Y', 'Z', 'W') as $key2){
                 $arConfig['CONFIG'][$key.'_'.$key2] = array(
                     "TYPE" => "DROPDOWN",
@@ -209,6 +238,7 @@ class CDigitalDelivery
                 'TYPE'=>'SECTION',
                 'TITLE'=>'Габариты по умолчанию',
                 "GROUP" => "general",
+                'CHECK_FORMAT' => 'NUMBER',
             ),
 
             "DEFAULT_X" => array(
@@ -216,33 +246,37 @@ class CDigitalDelivery
                 "DEFAULT" => "",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_X'),
                 "GROUP" => "general",
+                'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Z" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Z'),
-                "GROUP" => "general"
+                "GROUP" => "general",
+                'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Y" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Y'),
-                "GROUP" => "general"
+                "GROUP" => "general",
+                'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_W" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_W'),
-                "GROUP" => "general"
+                "GROUP" => "general",
+                'CHECK_FORMAT' => 'NUMBER',
             ),
             // Способы доставки
-            'TYPE_' => array(
+            'SUPPORTED_TYPE' => array(
                 "TYPE" => "DROPDOWN",
-                "TITLE" => GetMessage('DIGITAL_DELIVERY_'.$key2),
+                "TITLE" => 'Способы доставки',
                 "GROUP" => "type",
-                "DEFAULT" => 0,
+                "DEFAULT" => '0',
                 "VALUES" => array(
-                    '1,2' => 'ПВЗ и курьеры',
+                    0 => 'ПВЗ и курьеры',
                     1 => 'ПВЗ DDelivery',
                     2 => 'Курьеры DDelivery',
                 ),
@@ -256,19 +290,7 @@ class CDigitalDelivery
         );
 
 
-
-
-        $companyList = array(6 => GetMessage("DIGITAL_DELIVERY_CONFIG_GROUPS_COMPANY_SDEC"),
-            4 => "Boxberry",
-            11 => "Hermes",
-            2 => "IM Logistics",
-            16 => GetMessage("DIGITAL_DELIVERY_CONFIG_GROUPS_COMPANY_IM_LOG2"),
-            17 => GetMessage("DIGITAL_DELIVERY_CONFIG_GROUPS_COMPANY_IM_LOG3"),
-            3 => "Logibox",
-            14 => "Maxima Express",
-            1 => "PickPoint",
-            7 => "QIWI",
-        );
+        $companyList = self::companyList();
 
         foreach($companyList as $key => $company){
             $arConfig['CONFIG']["COMPANY_".$key] = array(
@@ -351,7 +373,7 @@ class CDigitalDelivery
                 'TYPE' => 'DROPDOWN',
                 'MCS_ID' => 'AROUND',
                 'POST_TEXT' => ' шаг ',
-                'DEFAULT' => '',
+                'DEFAULT' => 1,
                 'GROUP' => 'price',
                 'VALUES' => array(
                     2 => 'Вниз',
@@ -368,11 +390,43 @@ class CDigitalDelivery
                 'GROUP' => 'price',
                 'CHECK_FORMAT' => 'NUMBER',
             ),
+            'PAY_PICKUP' => array(
+                'TITLE' => 'Выводить стоимость забора в цене доставки',
+                "TYPE" => "CHECKBOX",
+                "DEFAULT" => 'N',
+                "GROUP" => "type",
+            ),
         );
 
         // var_dump($arConfig);
 
         return $arConfig;
+    }
+
+    static public function companyList()
+    {
+        return array(
+            4 => 'Boxberry',
+            21 => 'Boxberry Express',
+            29 => 'DPD Classic',
+            23 => 'DPD Consumer',
+            27 => 'DPD ECONOMY',
+            28 => 'DPD Express',
+            20 => 'DPD Parcel',
+            30 => 'EMS',
+            11 => 'Hermes',
+            16 => 'IM Logistics Пушкинская',
+            22 => 'IM Logistics Экспресс',
+            17 => 'IMLogistics',
+            3 => 'Logibox',
+            14 => 'Maxima Express',
+            1 => 'PickPoint',
+            7 => 'QIWI Post',
+            13 => 'КТС',
+            26 => 'СДЭК Посылка',
+            25 => 'СДЭК Посылка Самовывоз',
+            24 => 'Сити Курьер',
+        );
     }
 
     function GetSettings($strSettings)
@@ -383,7 +437,7 @@ class CDigitalDelivery
     function SetSettings($arSettings)
     {
         $string = serialize($arSettings);
-        if($arSettings){
+        if($arSettings) {
             $oldSetting = COption::GetOptionString('delivery', 'ddelivery', $string);
             if($oldSetting) {
                 $oldSetting = unserialize($oldSetting);
@@ -447,7 +501,8 @@ class CDigitalDelivery
     /* Калькуляция стоимости доставки*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
-        if($_REQUEST['DELIVERY_ID'] != "DigitalDelivery:all"){
+
+        if($_REQUEST['DELIVERY_ID'] != "DigitalDelivery:all") {
             return array("RESULT" => "ERROR");
         }
         //$res = self::Calc($arConfig);
