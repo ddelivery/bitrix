@@ -18,10 +18,10 @@ class DDeliveryEvents
 
         $html = '
             <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-            <script type="text/javascript" src="/bitrix/modules/ddelivery/install/components/ddelivery/static/jquery.the-modal.js"></script>
+            <script type="text/javascript" src="/bitrix/components/ddelivery/static/jquery.the-modal.js"></script>
 
-            <script src="/bitrix/modules/ddelivery/install/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
-            <script src="/bitrix/modules/ddelivery/install/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
+            <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
+            <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
 
             <span id="ddelivery">
                 <span><script>
@@ -564,7 +564,7 @@ class DDeliveryEvents
     {
         $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
         if(!$property)
-            throw new \Bitrix\Main\DB\Exception("Error order DDelivery ID");
+            return;
         try{
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
 

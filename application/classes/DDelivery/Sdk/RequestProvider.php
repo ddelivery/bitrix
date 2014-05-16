@@ -136,7 +136,7 @@ class RequestProvider
 			curl_setopt($this->curl[$server], CURLOPT_HEADER, 0);
 			curl_setopt($this->curl[$server], CURLOPT_FOLLOWLOCATION, 1);
             // В реальных интернетах за пинг в секунду убивают
-            curl_setopt($this->curl[$server], CURLOPT_TIMEOUT, 20);
+            //curl_setopt($this->curl[$server], CURLOPT_TIMEOUT, 3);
 		}
 		 
 		$urlSuffix = '';
@@ -144,7 +144,9 @@ class RequestProvider
 		foreach($params as $key => $value) {
 			$urlSuffix .= urlencode($key).'='.urlencode($value) . '&';
 		}
-		
+
+        $urlSuffix .= 'sdk_ver='.include(dirname(dirname(dirname(__DIR__))).'/version.php');
+
 		return $urlSuffix;
 	}
 	
