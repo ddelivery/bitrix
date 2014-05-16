@@ -5,6 +5,8 @@
  * Time: 12:56
  */
 
+use DDelivery\DDeliveryUI;
+
 include_once(__DIR__.'/application/bootstrap.php');
 
 class DDeliveryEvents
@@ -31,7 +33,7 @@ class DDeliveryEvents
 
         return array(
             /* Basic description */
-            "SID" => "DigitalDelivery",
+            "SID" => "ddelivery",
             "NAME" => GetMessage('DIGITAL_DELIVERY_NAME'),
             "DESCRIPTION" => GetMessage('DIGITAL_DELIVERY_DESCRIPTION'),
             "DESCRIPTION_INNER" => GetMessage('DIGITAL_DELIVERY_DESCRIPTION_INNER'),
@@ -444,7 +446,7 @@ class DDeliveryEvents
                 'PAYSYSTEM_ID' => '20',
                 'DELIVERY_ID' => '20',
             ));
-            CSaleOrderProps::UpdateOrderPropsRelations($id, 'DigitalDelivery:all', "D");
+            CSaleOrderProps::UpdateOrderPropsRelations($id, 'ddelivery:all', "D");
             */
 
         }
@@ -533,7 +535,7 @@ class DDeliveryEvents
         $cso = new CSaleOrder();
         $arOrder = $cso->GetByID($iOrderID);
 
-        if($arOrder["DELIVERY_ID"]=="DigitalDelivery:all" && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
+        if($arOrder["DELIVERY_ID"]=="ddelivery:all" && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
         {
 
             $db_props = CSaleOrderProps::GetList(
@@ -560,7 +562,22 @@ class DDeliveryEvents
 
     static function OnSaleStatusOrder($orderId, $statusID)
     {
-        var_dump(1);
-        die();
+        $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
+        if(!$property)
+            throw new \Bitrix\Main\DB\Exception("Error order DDelivery ID");
+        try{
+            $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+
+            $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
+            $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
+            if(!$ddeliveryUI->onCmsOrderFinish( $property['VALUE'], $orderId, $statusID, '')) {
+                throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
+            }
+        }
+        catch(\DDelivery\DDeliveryException $e)
+        {
+            throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
+        }
+
     }
 }

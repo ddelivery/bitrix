@@ -60,14 +60,15 @@ Class ddelivery extends CModule
             CModule::IncludeModule("sale");
 
 
-            $this->ShowForm('OK', GetMessage('MOD_INST_OK'));
+            $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
         }
         else
             $this->ShowForm('ERROR', GetMessage('DIGITAL_DELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
     }
 
-    private function ShowForm($typeIn, $messageIn, $buttonName = '') {
-        global $APPLICATION, $type, $message;
+    private function ShowForm($typeIn, $messageIn, $installOkIn = false) {
+        global $APPLICATION, $type, $message, $installOk;
+        $installOk = $installOkIn;
         $type = $typeIn;
         $message = $messageIn;
         $APPLICATION->SetTitle(GetMessage('DIGITAL_DELIVERY_MODULE_NAME'));

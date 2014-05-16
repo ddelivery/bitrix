@@ -26,7 +26,7 @@ if(typeof(DDeliveryIntegration) == 'undefined')
                     status = data.comment;
                     $('#ddelivery span').html(data.comment);
                     jQuery.modal().close();
-                    $('#ID_DELIVERY_DigitalDelivery_all').click();
+                    $('#ID_DELIVERY_ddelivery_all').click();
                 }
             };
 
@@ -38,7 +38,7 @@ if(typeof(DDeliveryIntegration) == 'undefined')
 
         $('BODY').append("<style>" +
             // Скрываем ненужную кнопку
-            " #delivery_info_DigitalDelivery_all a{display: none;} " +
+            " #delivery_info_ddelivery_all a{display: none;} " +
             // Стили попапа
             " .modal { background: #eee; width: 1000px; margin: 10px auto; border: 3px solid #666; padding: 0px; } " +
             " .modal .close { float: right; text-decoration: none; font-size: 40px; cursor: pointer; } " +

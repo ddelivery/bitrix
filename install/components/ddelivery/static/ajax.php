@@ -10,7 +10,7 @@ require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_befo
 header('Content-Type: text/html; charset=utf-8');
 
 CModule::IncludeModule("sale");
-$ddeliveryConfig = CSaleDeliveryHandler::GetBySID('DigitalDelivery')->Fetch();
+$ddeliveryConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
 $cart = array();
 
 
