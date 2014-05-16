@@ -10,7 +10,7 @@ namespace DDelivery\Adapter;
 
 use DDelivery\Order\DDeliveryOrder;
 use DDelivery\Order\DDeliveryProduct;
-use DDelivery\Adapter\DDStatusProvider;
+use DDelivery\Order\DDStatusProvider;
 use DDelivery\Point\DDeliveryAbstractPoint;
 use DDelivery\Point\DDeliveryPointCourier;
 use DDelivery\Point\DDeliveryPointSelf;
@@ -145,8 +145,18 @@ abstract class DShopAdapter
      */
     public abstract function setCmsOrderStatus( $cmsOrderID, $status );
 
-
     /**
+     * Метод взамодейсвует с  настройками. Возвращает массив с ID заказов
+     * со стороны CMS у которых статус заказа такой как указан в настройках
+     *
+     * @return array
+     */
+    public function getOrderIDsByStatus()
+    {
+        return array();
+    }
+
+        /**
      *
      * Используется при отправке заявки на сервер DD для указания стартового статуса
      *
@@ -159,7 +169,6 @@ abstract class DShopAdapter
      */
     public function isConfirmedStatus( $localStatus )
     {
-
         return true;
     }
 
@@ -180,16 +189,13 @@ abstract class DShopAdapter
     }
 
     /**
-     * Проверяет статус заказа, при определенном статусе отправляем заказ на сервер dd
+     * Получает статус заказа, при определенном статусе отправляем заказ на сервер ddelivery
      * 
-     * @param string $status
-     * @param DDeliveryOrder $order
-     * @deprecated
-     * @return bool
+     * @return $mixed
      */
-    public function isStatusToSendOrder( $status, $order )
+    public function getStatusToSendOrder()
     {
-        return true;
+        return 1;
     }
 
     /**

@@ -163,7 +163,7 @@ class RequestProvider
 		{
 			$url = $this->serverUrl[$server] . urlencode($this->apiKey) .'/' . urlencode($action) . '.json?';
 			$url .= $urlSuffix;
-
+			
 			curl_setopt($this->curl[$server], CURLOPT_URL, $url);
 		}
 		else if( $method == 'get' && ( $server == 'cabinetnode' || $server == 'stagenode')  )

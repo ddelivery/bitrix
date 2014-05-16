@@ -4,6 +4,8 @@ CModule::IncludeModule("catalog");
 
 IncludeModuleLangFile(__FILE__);
 
+
+
 include_once(__DIR__.'/application/bootstrap.php');
 
 if (!function_exists('str_utf8')) {
@@ -15,7 +17,12 @@ if (!function_exists('str_utf8')) {
         return $APPLICATION->ConvertCharset($str, 'utf-8', SITE_CHARSET);
     }
 }
-
+\Bitrix\Main\Loader::registerAutoLoadClasses(
+    'digital.delivery',
+    array(
+        'DDeliveryShop' => 'DDeliveryShop.php',
+    )
+);
 
 class CDigitalDelivery
 {
@@ -24,29 +31,12 @@ class CDigitalDelivery
         include(__DIR__.'/install/version.php');
         /** @var $arModuleVersion string[] */
 
-        $options = COption::GetOptionString('delivery', 'ddelivery');
-
-        if($options && $options = unserialize($options)){
-            $products = array();
-            /**
-             * @var dDeliveryProduct $object
-             */
-            $object = self::Calc($options, $products);
-
-            $html = GetMessage('DIGITAL_DELIVERY_PROFILE_DESCRIPTION');
-
-            $html.='';
-
-        }else{
-            $html = GetMessage('DIGITAL_DELIVERY_NOT_INSTALL');
-        }
-
         $html = '
             <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-            <script type="text/javascript" src="/bitrix/components/ddelivery/static/jquery.the-modal.js"></script>
+            <script type="text/javascript" src="/bitrix/modules/ddelivery/install/components/ddelivery/static/jquery.the-modal.js"></script>
 
-            <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
-            <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
+            <script src="/bitrix/modules/ddelivery/install/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
+            <script src="/bitrix/modules/ddelivery/install/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
 
             <span id="ddelivery">
                 <span><script>
@@ -243,28 +233,28 @@ class CDigitalDelivery
 
             "DEFAULT_X" => array(
                 "TYPE" => "INTEGER",
-                "DEFAULT" => "",
+                "DEFAULT" => "100",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_X'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Z" => array(
                 "TYPE" => "INTEGER",
-                "DEFAULT" => "",
+                "DEFAULT" => "100",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Z'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Y" => array(
                 "TYPE" => "INTEGER",
-                "DEFAULT" => "",
+                "DEFAULT" => "100",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Y'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_W" => array(
                 "TYPE" => "INTEGER",
-                "DEFAULT" => "",
+                "DEFAULT" => "100",
                 "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_W'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
@@ -455,69 +445,44 @@ class CDigitalDelivery
         unlink($_SERVER["DOCUMENT_ROOT"].'/upload/ddelivery_cache.dat');
     }
 
-    /**
-     * @param $arConfig
-     * @return CDigitalDeliveryProduct
-     */
-    static function Calc($arConfig, &$products = array())
-    {
-        return array();
-        $arSelect = array('ID');
-
-        foreach($arConfig as $name => $val){
-            if(preg_match('/^IBLOCK_[0-9]+_([XYZW])$/', $name, $math) > 0){
-                $arSelect[$math[1]] = 'PROPERTY_'.(is_array($val) ? $val['VALUE'] : $val);
-            }
-        }
-
-        $CSB = new CSaleBasket();
-        $res = $CSB->GetList(array(), array("FUSER_ID" => $CSB->GetBasketUserID(), "LID" => SITE_ID, "ORDER_ID" => "NULL"));
-        //$products  = array();
-        while($product = $res->Fetch()){
-            if( $product['DELAY'] == 'N'){
-                $products[$product['PRODUCT_ID']] = new dDeliveryProduct($arConfig, $product['QUANTITY'], $product['NAME'].' ('.$product['QUANTITY'].' шт)');
-            }
-        }
-        $CIBlockElement = new CIBlockElement();
-        $res = $CIBlockElement->GetList(
-            Array(),
-            array('ID' => array_keys($products)),
-            false, Array(), $arSelect);
-
-        while($element = $res->Fetch()){
-            foreach($arSelect as $key => $val){
-                if(!empty($element[$val.'_VALUE'])){ // PROPERTY_8_VALUE
-                    $products[$element['ID']]->$key = $element[$val.'_VALUE'];
-                }
-            }
-        }
-        //var_dump($arConfig);
-        //var_dump($products);
-
-        $result = dDeliveryProduct::merge($products);
-        return $result;
-    }
-
     /* Калькуляция стоимости доставки*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
 
-        if($_REQUEST['DELIVERY_ID'] != "DigitalDelivery:all") {
-            return array("RESULT" => "ERROR");
+        if(substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/'){
+            return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
         }
-        //$res = self::Calc($arConfig);
+        if(!empty($_SESSION['DIGITAL_DELIVERY']) && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
+        {
+            // TODO Удалить когда починят
+            $dbBasketItems = CSaleBasket::GetList(
+                array("ID" => "ASC"),
+                array(
+                    "FUSER_ID" => CSaleBasket::GetBasketUserID(),
+                    "LID" => SITE_ID,
+                    "ORDER_ID" => "NULL"
+                ),
+                false,
+                false,
+                array('PRODUCT_ID', 'PRICE', 'QUANTITY', 'NAME')
+            );
+            $itemList = array();
+            while($arBasket = $dbBasketItems->Fetch()) {
+                $itemList[] = $arBasket;
+            }
+            if(empty($itemList)){
+                return array( "RESULT" => "ERROR", 'ERROR' => 'Корзина в сейсии пуста');
+            }
+            //END TODO
 
-        if($STEP == 1){
-            return array(
-                "RESULT" => "NEXT_STEP",
-                //"VALUE" => 1
-            );
-        }
-        if(!empty($_SESSION['ddelivery']) && !empty($_SESSION['ddelivery']['price'])){
-            return array(
-                "RESULT" => "OK",
-                "VALUE" => $_SESSION['ddelivery']['price']
-            );
+
+            $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
+            $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
+            // Использовать initOrder
+            $ddeliveryUI->initIntermediateOrder($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']);
+            $price = $ddeliveryUI->getOrder()->getPoint()->getDeliveryInfo()->clientPrice;
+
+            return array("RESULT" => "OK", 'VALUE'=>$price);
         }
 
         return array(
@@ -541,118 +506,43 @@ class CDigitalDelivery
         return $options;
     }
 
-    public static function getPrice($point, $save=false)
+    static function OnOrderNewSendEmail($iOrderID, $eventName, $arFieldsUpdate)
     {
-        $options = COption::GetOptionString('delivery', 'ddelivery');
-        $options = unserialize($options);
-        $products = array();
-        /**
-         * @var dDeliveryProduct $object
-         */
-        $object = self::Calc($options, $products);
-        $descr = array();
-        foreach($products as $product){
-            $descr[] = $product;
+        if(empty($_SESSION['DIGITAL_DELIVERY']) || empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID'])) {
+            return true;
         }
-
-        $data = array('width' => $object->X, 'height' => $object->Z, 'length'=>$object->Y, 'weight'=>$object->W,
-            'point'=>$point, 'description' => $object->description
-        );
-        if($save)
-            $_SESSION['DIGITAL_DELIVERY']['DATA'] = $data;
-
-        $dDeliveryLib = new dDeliveryLib($options['API_KEY']);
-        $data = $dDeliveryLib->apiPrice($object, $point);
-
-        if(!$data && !$data['success']){
-            return false;
-        }
-        $dataSource = $data;
-        $i=1;
-        while($i <= 3){
-            if(($options['PRICE_IF_'.$i] == '>' && $data['response']['delivery_price'] > $options['PRICE_SUM_'.$i])
-                || ($options['PRICE_IF_'.$i] == '<' && $data['response']['delivery_price'] < $options['PRICE_SUM_'.$i]) )
-            {
-                if($options['PRICE_TYPE_'.$i] == 'A') {
-                    $data['response']['delivery_price'] = 0;
-                }elseif($options['PRICE_TYPE_'.$i] == 'F') {
-                    if($options['PRICE_VALUE_'.$i] > 100){
-                        $options['PRICE_VALUE_'.$i] = 100;
-                    }
-                    $data['response']['delivery_price'] = round($data['response']['delivery_price'] * (1 - ($options['PRICE_VALUE_'.$i] / 100)));
-                }elseif($options['PRICE_TYPE_'.$i] == 'M') {
-                    if($options['PRICE_VALUE_'.$i] > $data['response']['delivery_price']){
-                        $data['response']['delivery_price'] = 0;
-                    }else{
-                        $data['response']['delivery_price'] = $data['response']['delivery_price'] - $options['PRICE_VALUE_'.$i];
-                    }
-                }elseif($options['PRICE_TYPE_'.$i] != 'AC'){
-                    // фигня, а не правило, пропускаем
-                    continue;
-                }
-                break;
-            }
-            $i++;
-        }
-
-        $userData = array(
-            'products' => $products,
-            'package' => $object,
-            'response' => $data,
-            'responseSource' => $dataSource,
-        );
-
-        foreach(GetModuleEvents("digital.delivery", "getPrice", true)  as $arEvent){
-            ExecuteModuleEventEx($arEvent, array($$userData));
-        }
-
-        return $userData['response'];
-    }
-
-    function OnOrderNewSendEmail($iOrderID, $eventName, $arFieldsUpdate){
         $cso = new CSaleOrder();
-        $arFields = $cso->GetByID($iOrderID);
-        if($arFields["DELIVERY_ID"]=="DigitalDelivery:all" && !empty($_SESSION['DIGITAL_DELIVERY']['DATA']))
+        $arOrder = $cso->GetByID($iOrderID);
+
+        if($arOrder["DELIVERY_ID"]=="DigitalDelivery:all" && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
         {
-            $options = self::getOptions();
 
-            $dataTmp = $_SESSION['DIGITAL_DELIVERY']['DATA'];
-
-            // @TODO переделать из костыля
-            $paymentPrice = '';
-            if($arFields['PAY_SYSTEM_ID'] == 1){ // оплата у нас
-                $paymentPrice = $arFields['PRICE'];
-            }else{ // оплата где-то там.
-            }
-
-            $db_vals = CSaleOrderPropsValue::GetList(
+            $db_props = CSaleOrderProps::GetList(
                 array("SORT" => "ASC"),
                 array(
-                    "ORDER_ID" => $iOrderID,
-                    "CODE" => array($options['PROP_FIO'], $options['PROP_PHONE'])
+                    "PERSON_TYPE_ID" => $arOrder["PERSON_TYPE_ID"],
+                    'CODE' => 'DDELIVERY_ID',
                 )
             );
-            $name = '';
-            $phone = '';
-            while($prop = $db_vals->Fetch()){
-                if($prop['CODE'] == $options['PROP_FIO']){
-                    $name = $prop['VALUE'];
-                }elseif($prop['CODE'] == $options['PROP_PHONE']){
-                    $phone = $prop['VALUE'];
-                }
-            }
+            $property = $db_props->Fetch();
 
-            $dDeliveryLib = new dDeliveryLib($options['API_KEY']);
-            $dDeliveryLib->apiOrderCreate(
-                $dataTmp['width'], $dataTmp['height'], $dataTmp['length'], $dataTmp['weight'],
-                $dataTmp['point'], round(($arFields['PRICE']/100) * $options['ASSESSED_VALUE']),
-                $paymentPrice, $name, $phone, 'OrderId: '.$iOrderID."\n"
-            );
-
-
+            CSaleOrderPropsValue::Add(array(
+                "ORDER_ID" => $iOrderID,
+                "ORDER_PROPS_ID" => $property['ID'],
+                "NAME" => $property['NAME'],
+                "CODE" => $property['CODE'],
+                "VALUE" => $_SESSION['DIGITAL_DELIVERY']['ORDER_ID']
+            ));
         }
-        unset($_SESSION["DIGITAL_DELIVERY"]['DATA']);
+        unset($_SESSION["DIGITAL_DELIVERY"]['ORDER_ID']);
+
+        return true;
+    }
+
+    static function OnSaleStatusOrder($orderId, $statusID)
+    {
+        var_dump(1);
+        die();
     }
 }
 
-AddEventHandler("sale", "onSaleDeliveryHandlersBuildList", array('CDigitalDelivery', 'Init'));

@@ -6,7 +6,7 @@
 * @author  mrozk
 */
 namespace DDelivery;
-use DDelivery\Adapter\DDStatusProvider;
+use DDelivery\Order\DDStatusProvider;
 use DDelivery\Adapter\DShopAdapter;
 use DDelivery\DataBase\City;
 use DDelivery\DataBase\Order;
@@ -135,6 +135,34 @@ class DDeliveryUI
     }
 
     /**
+     * Функция вызывается при изменении статуса внутри cms для отправки
+     *
+     * @param $cmsID
+     * @param $cmsStatus
+     *
+     * @return int
+     */
+    public function onCmsChangeStatus( $cmsID, $cmsStatus )
+    {
+        $order = $this->getOrderByCmsID( $cmsID );
+        if( $order )
+        {
+            $order->localStatus = $cmsStatus;
+            if( $this->shop->isStatusToSendOrder($cmsStatus) && $order->ddeliveryID == 0 )
+            {
+                if($order->type == DDeliverySDK::TYPE_SELF)
+                {
+                    return $this->createSelfOrder($order);
+                }
+                elseif( $order->type == DDeliverySDK::TYPE_COURIER )
+                {
+                    return $this->createCourierOrder($order);
+                }
+            }
+        }
+
+    }
+    /**
      *
      * Получить заказы которые еще не окончили обработку
      * @return DDeliveryOrder[]
@@ -160,16 +188,24 @@ class DDeliveryUI
     /**
      * Создать пул заявок по заказам которые еще не закончены
      * и на  которых заявки не созданы
+     *
+     * @return array
      */
     public function createPullOrders()
     {
-        $orders = $this->getUnfinishedOrders();
-        if( count( $orders ) )
+        $orderIDs = $this->shop->getOrderIDsByStatus();
+
+        if(is_array( $orderIDs ) && count($orderIDs))
         {
-            foreach ( $orders as $item)
+            $result = array();
+            foreach( $orderIDs as $el )
             {
-                    if(!$item->ddeliveryID)
-                    {
+                $item = $this->getOrderByCmsID($el);
+
+                if( $item && !$item->ddeliveryID )
+                {
+
+                        $item->localStatus = $this->shop->getStatusToSendOrder();
 
                         if( $item->type == DDeliverySDK::TYPE_SELF)
                         {
@@ -179,24 +215,35 @@ class DDeliveryUI
                         {
                             $ddId = $this->createCourierOrder($item);
                         }
-                    }
+
+                        $result[] = array('ddId' => $ddId, 'localID' => $item->shopRefnum);
+
+                }
             }
+            return $result;
         }
     }
     /**
      * Получить статусы для пула заказов которые еще не закончены
+     *
+     * @return array
      */
     public function getPullOrdersStatus()
     {
         $orders = $this->getUnfinishedOrders();
+        $statusReport = array();
         if( count( $orders ) )
         {
             foreach ( $orders as $item)
             {
-                $this->changeOrderStatus( $item->shopRefnum );
+                $rep = $this->changeOrderStatus( $item );
+                if( count( $rep ) )
+                {
+                    $statusReport[] = $rep;
+                }
             }
         }
-        return true;
+        return $statusReport;
     }
 
     /**
@@ -251,35 +298,35 @@ class DDeliveryUI
      *
      * Обработчик изменения статуса заказа
      *
-     * @param int $cmsOrderID id заказа в cms
+     * @param DDeliveryOrder $order  заказа в cms
      *
-     * @return bool
+     * @return array
      *
      */
-    public function changeOrderStatus( $cmsOrderID )
+    public function changeOrderStatus( $order )
     {
-        $order = $this->getOrderByCmsID( $cmsOrderID );
         if( $order )
         {
             if( $order->ddeliveryID == 0 )
             {
-                return false;
+                return array();
             }
             $ddStatus = $this->getDDOrderStatus($order->ddeliveryID);
+
             if( $ddStatus == 0 )
             {
-                return false;
+                return array();
             }
             $order->ddStatus = $ddStatus;
-            echo $ddStatus;
             $order->localStatus = $this->shop->getLocalStatusByDD( $order->ddStatus );
             $this->saveFullOrder($order);
             $this->shop->setCmsOrderStatus($order->shopRefnum, $order->localStatus);
-            return true;
+            return array('cms_order_id' => $order->shopRefnum, 'ddStatus' => $order->ddStatus,
+                         'localStatus' => $order->localStatus );
         }
         else
         {
-            return false;
+            return array();
         }
     }
 
@@ -317,15 +364,16 @@ class DDeliveryUI
      * @return bool
      */
     public function onCmsOrderFinish( $id, $shopOrderID, $status, $payment)
-    {   
-        if(!$this->initIntermediateOrder( $id )) {
+    {
+        $orders = $this->initOrder( array($id) );
+        if(!count($orders))
+        {
             return false;
         }
-        $order = $this->getOrder();
-        $order->paymentVariant = (int)$payment;
+        $order = $orders[0];
+        $order->paymentVariant = $payment;
         $order->shopRefnum = $shopOrderID;
-        $order->localStatus = (int)$status;
-
+        $order->localStatus = $status;
         /*
         if( $this->shop->isStatusToSendOrder( $status, $order) )
         {   
@@ -1671,6 +1719,7 @@ class DDeliveryUI
                 } elseif($point instanceof DDeliveryPointCourier) {
                     $comment = 'Доставка курьером по адресу '.$this->order->getFullAddress();
                 }
+                $this->shop->onFinishChange($this->order->localId, $this->order, $point);
                 echo json_encode(array(
                     'html'=>'',
                     'js'=>'change',
@@ -1915,9 +1964,9 @@ class DDeliveryUI
         $order = $this->order;
         $order->declaredPrice = $this->shop->getDeclaredPrice($order);
 
-        $fieldValue = $order->getToName();
+        $fieldValue = $order->firstName;
         if(!$fieldValue)
-            $order->setToName($this->shop->getClientFirstName());
+            $order->firstName = $this->shop->getClientFirstName();
 
 
         $fieldValue = $order->secondName;
