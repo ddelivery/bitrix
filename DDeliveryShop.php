@@ -200,7 +200,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function getPathByDB()
     {
-        return $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/digital.delivery/db.sqlite';
+        return __DIR__.'/db.sqlite';
     }
 
     /**
