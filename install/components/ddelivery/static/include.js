@@ -1,10 +1,16 @@
 /**
  * Created by DnAp on 08.05.14.
  */
-if(typeof(DDeliveryIntegration) == 'undefined')
-    var DDeliveryIntegration = (function(){
+var topWindow = parent;
+
+while(topWindow != topWindow.parent) {
+    topWindow = topWindow.parent;
+}
+
+if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
+    topWindow.DDeliveryIntegration = (function(){
         var th = {};
-        var status = 'Выберите точку самовывоза';
+        var status = 'Выберите условия доставки';
         th.getStatus = function(){
             return status;
         };
@@ -46,9 +52,10 @@ if(typeof(DDeliveryIntegration) == 'undefined')
             " .themodal-overlay { position: fixed; bottom: 0; left: 0; top: 0;right: 0; z-index: 100; overflow: auto; -webkit-overflow-scrolling: touch; } " +
             " .themodal-overlay > * { -webkit-transform: translateZ(0px); } " +
             " .themodal-overlay { background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); zoom: 1; z-index:1000; } " +
-            " .ddelivery a{ color: #12a9e1; font-size: 16px; } " +
+            " #ddelivery a{ color: #12a9e1; font-size: 16px; } " +
             "</style>" +
             '<div class="modal" id="ddelivery_popup" style="display: none"></div>');
 
         return th;
     })();
+var DDeliveryIntegration = topWindow.DDeliveryIntegration;

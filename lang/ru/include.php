@@ -7,7 +7,7 @@ $MESS["DIGITAL_DELIVERY_DESCRIPTION_INNER"] = "Уважаемые пользователи!<br>
     Если вам непонятно значение каких-то настроек, просим связаться с менеджерами DD.<br>
     В случае, если вам требуется больше настроек, так же просим связаться с
     <a target='_blank' href='http://ddelivery.ru/contacts.php?utm_source=partner&utm_medium=referral&utm_campaign=bitrix_admin'>клиентским отделом</a>.";
-$MESS["DIGITAL_DELIVERY_PROFILE_NAME"] = "Доставка в удобную Вам точку";
+$MESS["DIGITAL_DELIVERY_PROFILE_NAME"] = "Пункты самовывоза и курьерская доставка";
 $MESS["DIGITAL_DELIVERY_PROFILE_DESCRIPTION"] = "Выберите удобную для вас точку на карте";
 
 $MESS["DIGITAL_DELIVERY_CONFIG_GROUPS_GENERAL"] = "Основные";
