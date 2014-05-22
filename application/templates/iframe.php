@@ -19,8 +19,35 @@
     <script type="text/javascript" src="<?=$staticURL?>js/ddelivery.contact_form.js"></script>
     <script type="text/javascript" src="<?=$staticURL?>js/ddelivery.type_form.js"></script>
     <script src="//api-maps.yandex.ru/2.0/?load=package.full&lang=ru-RU" async="async" type="text/javascript"></script>
-    <div id="ddelivery">
+    <div id="ddelivery"></div>
+    <div id="ddelivery_loader">
+        <div class="map-popup">
+            <div class="map-popup__head">
+                <p>DDelivery. Доставка в удобную Вам точку.</p>
 
+                <div class="map-popup__head__close">&nbsp;</div>
+            </div>
+            <!--map-popup__head end-->
+            <div class="map-popup__main">
+                <div class="map-popup__main__overlay">&nbsp;</div>
+                <div class="map-popup__main__delivery">
+                    <div class="loader">
+                        <p>Подождите, ищется лучший маршрут...</p>
+                        <img src="<?=$staticURL?>/img/ajax_loader_horizont.gif"/>
+                    </div>
+                    <div>
+                        <p class="load_error">
+                            Произошла ошибка, <a href="javascript:void(0)">повторить запрос</a>
+                        </p>
+                    </div>
+                </div>
+
+            </div>
+            <div class="map-popup__bott">
+                <a href="http://ddelivery.ru/" target="blank">Сервис доставки DDelivery.ru</a>
+            </div>
+
+        </div>
     </div>
     <script>
         $(function(){

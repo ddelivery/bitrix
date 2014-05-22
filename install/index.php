@@ -52,9 +52,9 @@ Class ddelivery extends CModule
             $eventManager->registerEventHandlerCompatible('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
             $eventManager->registerEventHandlerCompatible('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
             $eventManager->registerEventHandlerCompatible('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
-
-            CopyDirFiles(__DIR__."/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
-
+            if(!symlink(__DIR__."/components/ddelivery", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")){
+                CopyDirFiles(__DIR__."/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
+            }
             RegisterModule($this->MODULE_ID);
 
             CModule::IncludeModule("sale");
@@ -84,7 +84,12 @@ Class ddelivery extends CModule
         $eventManager->unRegisterEventHandler('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
         $eventManager->unRegisterEventHandler('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
 
-        DeleteDirFilesEx("/bitrix/components/ddelivery");
+
+        if(is_link($_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")) {
+            unlink($_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery");
+        }else{
+            DeleteDirFilesEx("/bitrix/components/ddelivery");
+        }
 
         UnRegisterModule($this->MODULE_ID);
         $this->ShowForm('OK', GetMessage('MOD_UNINST_OK'));

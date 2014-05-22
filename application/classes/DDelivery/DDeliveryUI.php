@@ -543,34 +543,26 @@ class DDeliveryUI
     	// Есть ли необходимость искать точки на сервере ddelivery
     	if( $this->shop->preGoToFindPoints( $this->order ))
     	{
-            $declared_price = $this->shop->getDeclaredPrice($order);
-    	    $response = $this->sdk->calculatorCourier( $order->city, $order->getDimensionSide1(),
-                                                       $order->getDimensionSide2(),
-                                                       $order->getDimensionSide3(),
-                                                       $order->getWeight(), $declared_price );
-    	    if( $response->success )
+            $response = $this->getCourierDeliveryInfoForCity($order);
+
+            if( count( $response ) )
             {
-
-    		    if( count( $response->response ) )
-    		    {
-    			    foreach ($response->response as $p)
-    			    {
-    				    $point = new \DDelivery\Point\DDeliveryPointCourier( false );
-    				    $deliveryInfo = new \DDelivery\Point\DDeliveryInfo( $p );
-    				    $point->setDeliveryInfo($deliveryInfo);
-    				    $point->pointID = $deliveryInfo->get('delivery_company');
-    				    $points[] = $point;
-    			    }
-    		    }
+                foreach ($response as $p)
+                {
+                    $point = new \DDelivery\Point\DDeliveryPointCourier( false );
+                    $deliveryInfo = new \DDelivery\Point\DDeliveryInfo( $p );
+                    $point->setDeliveryInfo($deliveryInfo);
+                    $point->pointID = $deliveryInfo->get('delivery_company');
+                    $points[] = $point;
+                }
+    		    usort($points, function($a, $b){
+                    /**
+                     * @var DDeliveryPointCourier $a
+                     * @var DDeliveryPointCourier $b
+                     */
+                    return $a->delivery_price - $b->delivery_price;
+                });
             }
-            usort($points, function($a, $b){
-                /**
-                 * @var DDeliveryPointCourier $a
-                 * @var DDeliveryPointCourier $b
-                 */
-                return $a->delivery_price - $b->delivery_price;
-            });
-
     	}
 
         $points = $this->shop->filterPointsCourier( $points, $order);
@@ -585,14 +577,24 @@ class DDeliveryUI
      */
     public function getCourierDeliveryInfoForCity( DDeliveryOrder $order )
     {
-        $declared_price = $this->shop->getDeclaredPrice($order);
         if(!$this->_validateOrderToGetPoints($order))
             throw new DDeliveryException('Для получения списка необходимо корректный order');
-    	$response = $this->sdk->calculatorCourier( $order->city, $order->getDimensionSide1(),
-    			                                   $order->getDimensionSide2(),
-    			                                   $order->getDimensionSide3(),
-    			                                   $order->getWeight(), $declared_price );
-    	if( $response->success )
+
+        $declared_price = $this->shop->getDeclaredPrice($order);
+        $params = array(
+            $order->city, $order->getDimensionSide1(),  $order->getDimensionSide2(),
+            $order->getDimensionSide3(), $order->getWeight(), $declared_price
+        );
+
+        $sig = 'DDeliverySDK::calculatorCourier:' . implode(':', $params);
+
+        $response = $this->cache->getCache($sig);
+        if(!$response){
+            $response = $this->sdk->calculatorCourier( $params[0], $params[1], $params[2], $params[3], $params[4], $params[5] );
+            $this->cache->setCache($sig, $response, 90);
+        }
+
+        if( $response->success )
     	{
     		return $response->response;
     	}
@@ -769,19 +771,23 @@ class DDeliveryUI
     public function getSelfDeliveryInfoForCity( DDeliveryOrder $order )
     {
         $declared_price = $this->shop->getDeclaredPrice($order);
-    	$response = $this->sdk->calculatorPickupForCity( $order->city, $order->getDimensionSide1(),
-                                                         $order->getDimensionSide2(),
-                                                         $order->getDimensionSide3(),
-                                                         $order->getWeight(), $declared_price );
-        
+        $params = array(
+            $order->city, $order->getDimensionSide1(), $order->getDimensionSide2(),
+            $order->getDimensionSide3(), $order->getWeight(), $declared_price
+        );
+
+        $sig = 'DDeliverySDK::calculatorPickupForCity:' . implode(':', $params);
+
+        $response = $this->cache->getCache($sig);
+        if(!$response){
+            $response = $this->sdk->calculatorPickupForCity( $params[0], $params[1], $params[2], $params[3], $params[4], $params[5]);
+            $this->cache->setCache($sig, $response, 90);
+        }
     	if( $response->success )
     	{
     		return $response->response;
     	}
-    	else
-    	{
-    		return 0;
-    	}
+        return 0;
     }
 
 

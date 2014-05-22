@@ -62,7 +62,7 @@ class DCache
         {
             $sig = $method . '_' . implode('_', $params);
 
-            if( ($result = $this->_load( $sig )) && $this->enabled )
+            if( ($result = $this->getCache( $sig )) && $this->enabled )
             {
                 return $result;
             }
@@ -70,7 +70,7 @@ class DCache
             {
                 $reflectionMethod = new \ReflectionMethod($this->context, $method);
                 $result  =  $reflectionMethod->invokeArgs($this->context, $params );
-                $this->_save( $sig, $result, $this->expired);
+                $this->setCache( $sig, $result, $this->expired);
                 return $result;
             }
         }
@@ -78,14 +78,13 @@ class DCache
     }
 
     /**
-     *
      * Загрузить запись кэша
      *
      * @param $sig ключ вызова метода
      *
      * @return mixed|null
      */
-    private function _load( $sig )
+    public function getCache( $sig )
     {
         $cache = new Cache();
         if( $data_container = $cache->getCacheRec($sig) )
@@ -103,16 +102,16 @@ class DCache
     /**
      * Сохранить запись кэша
      *
-     * @param $sig ключ вызова метода
-     * @param $data данные для сохранения
-     *
+     * @param string $sig ключ вызова метода
+     * @param mixed $data данные для сохранения
+     * @param int $expired время жизни кеша в минтуах
      * @return bool
      */
-    private function _save( $sig, $data )
+    public function setCache( $sig, $data, $expired )
     {
         $cache = new Cache();
         $data_container = serialize( $data );
-        $id = $cache->save($sig, $data_container, $this->expired);
+        $id = $cache->save($sig, $data_container, $expired);
         return $id;
     }
 

@@ -3,6 +3,7 @@
  * User: DnAp
  * Date: 14.05.14
  * Time: 10:42
+ * @var CMain $APPLICATION
  */
 use DDelivery\Order\DDeliveryProduct;
 
@@ -12,6 +13,10 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     protected $itemList;
     protected $formData;
     protected $orderProps = null;
+    /**
+     * @var \DDelivery\DDeliveryUI
+     */
+    private $ddeliveryUI;
 
     /**
      * @param array $config
@@ -20,10 +25,16 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function __construct($config, $itemList, $formData)
     {
-        $this->itemList = $itemList;
-        $this->config = $config;
-        $this->formData = $formData;
-
+        if(defined("BX_UTF")) {
+            global $APPLICATION;
+            $this->itemList = $APPLICATION->ConvertCharsetArray($itemList, 'utf-8', SITE_CHARSET);
+            $this->config = $APPLICATION->ConvertCharsetArray($config, 'utf-8', SITE_CHARSET);
+            $this->formData = $APPLICATION->ConvertCharsetArray($formData, 'utf-8', SITE_CHARSET);
+        }else{
+            $this->itemList = $itemList;
+            $this->config = $config;
+            $this->formData = $formData;
+        }
     }
 
     protected function getOrderProps()
@@ -59,7 +70,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Верните true если нужно использовать тестовый(stage) сервер
+     * Р’РµСЂРЅРёС‚Рµ true РµСЃР»Рё РЅСѓР¶РЅРѕ РёСЃРїРѕР»СЊР·РѕРІР°С‚СЊ С‚РµСЃС‚РѕРІС‹Р№(stage) СЃРµСЂРІРµСЂ
      * @return bool
      */
     public function isTestMode()
@@ -68,7 +79,15 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Конвертирует в utf8 занные, если в битриксе не включен UTF8
+     * @param \DDelivery\DDeliveryUI $ddeliveryUI
+     */
+    public function setDDeliveryUI(\DDelivery\DDeliveryUI $ddeliveryUI)
+    {
+        $this->ddeliveryUI = $ddeliveryUI;
+    }
+
+    /**
+     * РљРѕРЅРІРµСЂС‚РёСЂСѓРµС‚ РІ utf8 Р·Р°РЅРЅС‹Рµ, РµСЃР»Рё РІ Р±РёС‚СЂРёРєСЃРµ РЅРµ РІРєР»СЋС‡РµРЅ UTF8
      * @param string[]|string $string
      * @return string[]|string
      */
@@ -81,7 +100,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращает товары находящиеся в корзине пользователя, будет вызван один раз, затем закеширован
+     * Р’РѕР·РІСЂР°С‰Р°РµС‚ С‚РѕРІР°СЂС‹ РЅР°С…РѕРґСЏС‰РёРµСЃСЏ РІ РєРѕСЂР·РёРЅРµ РїРѕР»СЊР·РѕРІР°С‚РµР»СЏ, Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ РѕРґРёРЅ СЂР°Р·, Р·Р°С‚РµРј Р·Р°РєРµС€РёСЂРѕРІР°РЅ
      * @return DDeliveryProduct[]
      */
     protected function _getProductsFromCart()
@@ -140,24 +159,24 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             }
 
             $productsDD[] = new DDeliveryProduct(
-                $item['PRODUCT_ID'],	//	int $id id товара в системе и-нет магазина
-                $size['WIDTH']/10,	//	float $width длинна
-                $size['HEIGHT']/10,	//	float $height высота
-                $size['LENGTH']/10,	//	float $length ширина
-                $size['WEIGHT']/100,	//	float $weight вес кг
-                $item['PRICE'],	//	float $price стоимостьв рублях
-                $item['QUANTITY'],	//	int $quantity количество товара
-                $this->toUtf8($item['NAME'])	//	string $name Название вещи
+                $item['PRODUCT_ID'],	//	int $id id С‚РѕРІР°СЂР° РІ СЃРёСЃС‚РµРјРµ Рё-РЅРµС‚ РјР°РіР°Р·РёРЅР°
+                $size['WIDTH']/10,	//	float $width РґР»РёРЅРЅР°
+                $size['HEIGHT']/10,	//	float $height РІС‹СЃРѕС‚Р°
+                $size['LENGTH']/10,	//	float $length С€РёСЂРёРЅР°
+                $size['WEIGHT']/100,	//	float $weight РІРµСЃ РєРі
+                $item['PRICE'],	//	float $price СЃС‚РѕРёРјРѕСЃС‚СЊРІ СЂСѓР±Р»СЏС…
+                $item['QUANTITY'],	//	int $quantity РєРѕР»РёС‡РµСЃС‚РІРѕ С‚РѕРІР°СЂР°
+                $this->toUtf8($item['NAME'])	//	string $name РќР°Р·РІР°РЅРёРµ РІРµС‰Рё
             );
         }
         return $productsDD;
     }
 
     /**
-     * Меняет статус внутреннего заказа cms
+     * РњРµРЅСЏРµС‚ СЃС‚Р°С‚СѓСЃ РІРЅСѓС‚СЂРµРЅРЅРµРіРѕ Р·Р°РєР°Р·Р° cms
      *
-     * @param $cmsOrderID - id заказа
-     * @param $status - статус заказа для обновления
+     * @param $cmsOrderID - id Р·Р°РєР°Р·Р°
+     * @param $status - СЃС‚Р°С‚СѓСЃ Р·Р°РєР°Р·Р° РґР»СЏ РѕР±РЅРѕРІР»РµРЅРёСЏ
      *
      * @return bool
      */
@@ -167,7 +186,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращает API ключ, вы можете получить его для Вашего приложения в личном кабинете
+     * Р’РѕР·РІСЂР°С‰Р°РµС‚ API РєР»СЋС‡, РІС‹ РјРѕР¶РµС‚Рµ РїРѕР»СѓС‡РёС‚СЊ РµРіРѕ РґР»СЏ Р’Р°С€РµРіРѕ РїСЂРёР»РѕР¶РµРЅРёСЏ РІ Р»РёС‡РЅРѕРј РєР°Р±РёРЅРµС‚Рµ
      * @return string
      */
     public function getApiKey()
@@ -176,7 +195,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Должен вернуть url до каталога с статикой
+     * Р”РѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ url РґРѕ РєР°С‚Р°Р»РѕРіР° СЃ СЃС‚Р°С‚РёРєРѕР№
      * @return string
      */
     public function getStaticPath()
@@ -185,17 +204,17 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * URL до скрипта где вызывается DDelivery::render
+     * URL РґРѕ СЃРєСЂРёРїС‚Р° РіРґРµ РІС‹Р·С‹РІР°РµС‚СЃСЏ DDelivery::render
      * @return string
      */
     public function getPhpScriptURL()
     {
-        // Тоесть до этого файла
+        // РўРѕРµСЃС‚СЊ РґРѕ СЌС‚РѕРіРѕ С„Р°Р№Р»Р°
         return '/bitrix/components/ddelivery/static/ajax.php?'.http_build_query(array('formData'=>$this->formData), "", "&");
     }
 
     /**
-     * Возвращает путь до файла базы данных, положите его в место не доступное по прямой ссылке
+     * Р’РѕР·РІСЂР°С‰Р°РµС‚ РїСѓС‚СЊ РґРѕ С„Р°Р№Р»Р° Р±Р°Р·С‹ РґР°РЅРЅС‹С…, РїРѕР»РѕР¶РёС‚Рµ РµРіРѕ РІ РјРµСЃС‚Рѕ РЅРµ РґРѕСЃС‚СѓРїРЅРѕРµ РїРѕ РїСЂСЏРјРѕР№ СЃСЃС‹Р»РєРµ
      * @return string
      */
     public function getPathByDB()
@@ -204,26 +223,26 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Метод будет вызван когда пользователь закончит выбор способа доставки
+     * РњРµС‚РѕРґ Р±СѓРґРµС‚ РІС‹Р·РІР°РЅ РєРѕРіРґР° РїРѕР»СЊР·РѕРІР°С‚РµР»СЊ Р·Р°РєРѕРЅС‡РёС‚ РІС‹Р±РѕСЂ СЃРїРѕСЃРѕР±Р° РґРѕСЃС‚Р°РІРєРё
      *
      * @param int $orderId
      * @param \DDelivery\Order\DDeliveryOrder $order
-     * @param bool $customPoint Если true, то заказ обрабатывается магазином
+     * @param bool $customPoint Р•СЃР»Рё true, С‚Рѕ Р·Р°РєР°Р· РѕР±СЂР°Р±Р°С‚С‹РІР°РµС‚СЃСЏ РјР°РіР°Р·РёРЅРѕРј
      * @return void
      */
     public function onFinishChange($orderId, \DDelivery\Order\DDeliveryOrder $order, $customPoint)
     {
         if($customPoint){
-            // Это условие говорит о том что нужно обрабатывать заказ средствами CMS
+            // Р­С‚Рѕ СѓСЃР»РѕРІРёРµ РіРѕРІРѕСЂРёС‚ Рѕ С‚РѕРј С‡С‚Рѕ РЅСѓР¶РЅРѕ РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ Р·Р°РєР°Р· СЃСЂРµРґСЃС‚РІР°РјРё CMS
         }else{
-            // Запомни id заказа
+            // Р—Р°РїРѕРјРЅРё id Р·Р°РєР°Р·Р°
         }
         $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'] = $orderId;
 
     }
 
     /**
-     * Какой процент от стоимости страхуется
+     * РљР°РєРѕР№ РїСЂРѕС†РµРЅС‚ РѕС‚ СЃС‚РѕРёРјРѕСЃС‚Рё СЃС‚СЂР°С…СѓРµС‚СЃСЏ
      * @return float
      */
     public function getDeclaredPercent()
@@ -232,8 +251,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Должен вернуть те компании которые НЕ показываются в курьерке
-     * см. список компаний в DDeliveryUI::getCompanySubInfo()
+     * Р”РѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ С‚Рµ РєРѕРјРїР°РЅРёРё РєРѕС‚РѕСЂС‹Рµ РќР• РїРѕРєР°Р·С‹РІР°СЋС‚СЃСЏ РІ РєСѓСЂСЊРµСЂРєРµ
+     * СЃРј. СЃРїРёСЃРѕРє РєРѕРјРїР°РЅРёР№ РІ DDeliveryUI::getCompanySubInfo()
      * @return int[]
      */
     public function filterCompanyPointCourier()
@@ -248,8 +267,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Должен вернуть те компании которые НЕ показываются в самовывозе
-     * см. список компаний в DDeliveryUI::getCompanySubInfo()
+     * Р”РѕР»Р¶РµРЅ РІРµСЂРЅСѓС‚СЊ С‚Рµ РєРѕРјРїР°РЅРёРё РєРѕС‚РѕСЂС‹Рµ РќР• РїРѕРєР°Р·С‹РІР°СЋС‚СЃСЏ РІ СЃР°РјРѕРІС‹РІРѕР·Рµ
+     * СЃРј. СЃРїРёСЃРѕРє РєРѕРјРїР°РЅРёР№ РІ DDeliveryUI::getCompanySubInfo()
      * @return int[]
      */
     public function filterCompanyPointSelf()
@@ -264,13 +283,13 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Курьер
+     * Р’РѕР·РІСЂР°С‰Р°РµРј СЃРїРѕСЃРѕР± РѕРїР»Р°С‚С‹ РєРѕРЅСЃС‚Р°РЅС‚РѕР№ PluginFilters::PAYMENT_, РїСЂРµРґРѕРїР»Р°С‚Р° РёР»Рё РѕРїР»Р°С‚Р° РЅР° РјРµСЃС‚Рµ. РљСѓСЂСЊРµСЂ
      * @return int
      */
     public function filterPointByPaymentTypeCourier()
     {
         return self::PAYMENT_POST_PAYMENT;
-        // выбираем один из 3 вариантов(см документацию или комменты к констатам)
+        // РІС‹Р±РёСЂР°РµРј РѕРґРёРЅ РёР· 3 РІР°СЂРёР°РЅС‚РѕРІ(СЃРј РґРѕРєСѓРјРµРЅС‚Р°С†РёСЋ РёР»Рё РєРѕРјРјРµРЅС‚С‹ Рє РєРѕРЅСЃС‚Р°С‚Р°Рј)
         return self::PAYMENT_POST_PAYMENT;
         return self::PAYMENT_PREPAYMENT;
         return self::PAYMENT_NOT_CARE;
@@ -278,13 +297,13 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Самовывоз
+     * Р’РѕР·РІСЂР°С‰Р°РµРј СЃРїРѕСЃРѕР± РѕРїР»Р°С‚С‹ РєРѕРЅСЃС‚Р°РЅС‚РѕР№ PluginFilters::PAYMENT_, РїСЂРµРґРѕРїР»Р°С‚Р° РёР»Рё РѕРїР»Р°С‚Р° РЅР° РјРµСЃС‚Рµ. РЎР°РјРѕРІС‹РІРѕР·
      * @return int
      */
     public function filterPointByPaymentTypeSelf()
     {
         return self::PAYMENT_POST_PAYMENT;
-        // выбираем один из 3 вариантов(см документацию или комменты к констатам)
+        // РІС‹Р±РёСЂР°РµРј РѕРґРёРЅ РёР· 3 РІР°СЂРёР°РЅС‚РѕРІ(СЃРј РґРѕРєСѓРјРµРЅС‚Р°С†РёСЋ РёР»Рё РєРѕРјРјРµРЅС‚С‹ Рє РєРѕРЅСЃС‚Р°С‚Р°Рј)
         return self::PAYMENT_POST_PAYMENT;
         return self::PAYMENT_PREPAYMENT;
         return self::PAYMENT_NOT_CARE;
@@ -292,7 +311,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Если true, то не учитывает цену забора
+     * Р•СЃР»Рё true, С‚Рѕ РЅРµ СѓС‡РёС‚С‹РІР°РµС‚ С†РµРЅСѓ Р·Р°Р±РѕСЂР°
      * @return bool
      */
     public function isPayPickup()
@@ -301,7 +320,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Метод возвращает настройки оплаты фильтра которые должны быть собраны из админки
+     * РњРµС‚РѕРґ РІРѕР·РІСЂР°С‰Р°РµС‚ РЅР°СЃС‚СЂРѕР№РєРё РѕРїР»Р°С‚С‹ С„РёР»СЊС‚СЂР° РєРѕС‚РѕСЂС‹Рµ РґРѕР»Р¶РЅС‹ Р±С‹С‚СЊ СЃРѕР±СЂР°РЅС‹ РёР· Р°РґРјРёРЅРєРё
      *
      * @return array
      */
@@ -320,7 +339,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Тип округления
+     * РўРёРї РѕРєСЂСѓРіР»РµРЅРёСЏ
      * @return int
      */
     public function aroundPriceType()
@@ -337,7 +356,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Шаг округления
+     * РЁР°Рі РѕРєСЂСѓРіР»РµРЅРёСЏ
      * @return float
      */
     public function aroundPriceStep()
@@ -346,7 +365,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * описание собственных служб доставки
+     * РѕРїРёСЃР°РЅРёРµ СЃРѕР±СЃС‚РІРµРЅРЅС‹С… СЃР»СѓР¶Р± РґРѕСЃС‚Р°РІРєРё
      * @return string
      */
     public function getCustomPointsString()
@@ -356,11 +375,16 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
     public function getCourierRequiredFields()
     {
-        return parent::getCourierRequiredFields() & ~ self::FIELD_EDIT_LAST_NAME;
+        return parent::getCourierRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
+    }
+
+    public function getSelfRequiredFields()
+    {
+        return parent::getCourierRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
     }
 
     /**
-     * Если вы знаете имя покупателя, сделайте чтобы оно вернулось в этом методе
+     * Р•СЃР»Рё РІС‹ Р·РЅР°РµС‚Рµ РёРјСЏ РїРѕРєСѓРїР°С‚РµР»СЏ, СЃРґРµР»Р°Р№С‚Рµ С‡С‚РѕР±С‹ РѕРЅРѕ РІРµСЂРЅСѓР»РѕСЃСЊ РІ СЌС‚РѕРј РјРµС‚РѕРґРµ
      * @return string|null
      */
     public function getClientFirstName() {
@@ -373,7 +397,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Если вы знаете фамилию покупателя, сделайте чтобы оно вернулось в этом методе
+     * Р•СЃР»Рё РІС‹ Р·РЅР°РµС‚Рµ С„Р°РјРёР»РёСЋ РїРѕРєСѓРїР°С‚РµР»СЏ, СЃРґРµР»Р°Р№С‚Рµ С‡С‚РѕР±С‹ РѕРЅРѕ РІРµСЂРЅСѓР»РѕСЃСЊ РІ СЌС‚РѕРј РјРµС‚РѕРґРµ
      * @return string|null
      */
     public function getClientLastName() {
@@ -381,7 +405,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Если вы знаете телефон покупателя, сделайте чтобы оно вернулось в этом методе. 11 символов, например 79211234567
+     * Р•СЃР»Рё РІС‹ Р·РЅР°РµС‚Рµ С‚РµР»РµС„РѕРЅ РїРѕРєСѓРїР°С‚РµР»СЏ, СЃРґРµР»Р°Р№С‚Рµ С‡С‚РѕР±С‹ РѕРЅРѕ РІРµСЂРЅСѓР»РѕСЃСЊ РІ СЌС‚РѕРј РјРµС‚РѕРґРµ. 11 СЃРёРјРІРѕР»РѕРІ, РЅР°РїСЂРёРјРµСЂ 79211234567
      * @return string|null
      */
     public function getClientPhone() {
@@ -398,7 +422,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Верни массив Адрес, Дом, Корпус, Квартира. Если не можешь можно вернуть все в одном поле и настроить через get*RequiredFields
+     * Р’РµСЂРЅРё РјР°СЃСЃРёРІ РђРґСЂРµСЃ, Р”РѕРј, РљРѕСЂРїСѓСЃ, РљРІР°СЂС‚РёСЂР°. Р•СЃР»Рё РЅРµ РјРѕР¶РµС€СЊ РјРѕР¶РЅРѕ РІРµСЂРЅСѓС‚СЊ РІСЃРµ РІ РѕРґРЅРѕРј РїРѕР»Рµ Рё РЅР°СЃС‚СЂРѕРёС‚СЊ С‡РµСЂРµР· get*RequiredFields
      * @return string[]
      */
     public function getClientAddress() {
@@ -420,17 +444,30 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Верните id города в системе DDelivery
+     * Р’РµСЂРЅРёС‚Рµ id РіРѕСЂРѕРґР° РІ СЃРёСЃС‚РµРјРµ DDelivery
      * @return int
      */
     public function getClientCityId()
     {
-        // Если нет информации о городе, оставьте вызов родительского метода.
+        $return = false;
+        foreach($this->getOrderProps() as $prop){
+            if($prop['IS_LOCATION'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID'].'_val'])) {
+                $return = strtolower($this->formData['ORDER_PROP_'.$prop['ID'].'_val']);
+                $return = explode(',', trim(str_replace('Р РѕСЃСЃРёСЏ', '', $return), "\t\n\r\0\x0B ,"));
+            }
+        }
+        if($return) {
+            $cityRes = $this->ddeliveryUI->sdk->getAutoCompleteCity($return[0]);
+            if($cityRes && !empty($cityRes->response)) {
+                return $cityRes->response[0]['_id'];
+            }
+        }
+        // Р•СЃР»Рё РЅРµС‚ РёРЅС„РѕСЂРјР°С†РёРё Рѕ РіРѕСЂРѕРґРµ, РѕСЃС‚Р°РІСЊС‚Рµ РІС‹Р·РѕРІ СЂРѕРґРёС‚РµР»СЊСЃРєРѕРіРѕ РјРµС‚РѕРґР°.
         return parent::getClientCityId();
     }
 
     /**
-     * Возвращает поддерживаемые магазином способы доставки
+     * Р’РѕР·РІСЂР°С‰Р°РµС‚ РїРѕРґРґРµСЂР¶РёРІР°РµРјС‹Рµ РјР°РіР°Р·РёРЅРѕРј СЃРїРѕСЃРѕР±С‹ РґРѕСЃС‚Р°РІРєРё
      * @return array
      */
     public function getSupportedType()
