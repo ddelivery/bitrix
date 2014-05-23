@@ -457,25 +457,47 @@ class DDeliveryEvents
 
     private static function clearCache(){
         // @todo удалить кеш
+
     }
 
     /* Калькуляция стоимости доставки*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
 
-        if(substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/'){
+        if(substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
+           substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
             return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
         }
 
-        if(!empty($_SESSION['DIGITAL_DELIVERY']) && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
+        if(substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
+            $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
+            $dbPropsValue = CSaleOrderPropsValue::GetList(
+                array(),
+                array("ORDER_ID" => $cmsOrderId, 'CODE'=>'DDELIVERY_ID')
+            );
+            if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
+                return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
+            }
+            $ddOrderId = $arValue['VALUE'];
+            $order = CSaleOrder::GetByID($cmsOrderId);
+            $userId = $order['USER_ID'];
+        } else {
+            $userId = CSaleBasket::GetBasketUserID();
+            $cmsOrderId = "NULL";
+            if(empty($_SESSION['DIGITAL_DELIVERY']) || empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID'])) {
+                $ddOrderId = $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'];
+            }
+
+        }
+
+        if(!empty($ddOrderId))
         {
             // TODO Удалить когда починят
             $dbBasketItems = CSaleBasket::GetList(
                 array("ID" => "ASC"),
                 array(
-                    "FUSER_ID" => CSaleBasket::GetBasketUserID(),
-                    "LID" => SITE_ID,
-                    "ORDER_ID" => "NULL"
+                    "FUSER_ID" => $userId,
+                    "ORDER_ID" => $cmsOrderId
                 ),
                 false,
                 false,
@@ -493,9 +515,8 @@ class DDeliveryEvents
 
             $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
-            $ddeliveryUI->initIntermediateOrder($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']);
+            $ddeliveryUI->initIntermediateOrder($ddOrderId);
             $price = $ddeliveryUI->getOrder()->getPoint()->getDeliveryInfo()->clientPrice;
-
             return array("RESULT" => "OK", 'VALUE'=>$price);
         }
 
