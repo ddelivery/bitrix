@@ -417,7 +417,9 @@ class DDeliveryEvents
             if($oldSetting) {
                 $oldSetting = unserialize($oldSetting);
                 if( $oldSetting && $oldSetting['API_KEY'] != $arSettings['API_KEY']){
-                    self::clearCache();
+                    $IntegratorShop = new DDeliveryShop($arSettings, array(), array());
+                    $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
+                    $ddeliveryUI->cleanCache();
                 }
             }
 
@@ -455,11 +457,6 @@ class DDeliveryEvents
         return $string;
     }
 
-    private static function clearCache(){
-        // @todo удалить кеш
-
-    }
-
     /*  алькул€ци€ стоимости доставки*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
@@ -484,10 +481,9 @@ class DDeliveryEvents
         } else {
             $userId = CSaleBasket::GetBasketUserID();
             $cmsOrderId = "NULL";
-            if(empty($_SESSION['DIGITAL_DELIVERY']) || empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID'])) {
+            if(!empty($_SESSION['DIGITAL_DELIVERY']) && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID'])) {
                 $ddOrderId = $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'];
             }
-
         }
 
         if(!empty($ddOrderId))
@@ -581,17 +577,35 @@ class DDeliveryEvents
         return true;
     }
 
+    /**
+     * —обытие происходит когда изен€етс€ статус заказа
+     * @param $orderId
+     * @param $statusID
+     * @throws Bitrix\Main\DB\Exception
+     */
     static function OnSaleStatusOrder($orderId, $statusID)
     {
         $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
+
         if(!$property)
             return;
         try{
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+            if($statusID != $DDConfig['CONFIG']['CONFIG']['SEND_STATUS']['VALUE']) {
+                return;
+            }
+            $cmsOrder = CSaleOrder::GetByID($orderId);
 
             $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
-            if(!$ddeliveryUI->onCmsOrderFinish( $property['VALUE'], $orderId, $statusID, '')) {
+            $order = $ddeliveryUI->initOrder(array($property['VALUE']));
+            if(empty($order))
+                return;
+            $order = reset($order);
+            $order->paymentVariant = $cmsOrder['PAY_SYSTEM_ID'];
+            $ddeliveryUI->saveFullOrder($order);
+
+            if(!$ddeliveryUI->onCmsChangeStatus( $orderId, $statusID)) {
                 throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
             }
         }

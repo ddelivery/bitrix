@@ -380,7 +380,12 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
     public function getSelfRequiredFields()
     {
-        return parent::getCourierRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
+        return parent::getSelfRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
+    }
+
+    public function isStatusToSendOrder($status)
+    {
+        return $status == $this->config('SEND_STATUS');
     }
 
     /**
