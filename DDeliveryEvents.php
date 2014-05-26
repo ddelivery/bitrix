@@ -602,7 +602,11 @@ class DDeliveryEvents
             if(empty($order))
                 return;
             $order = reset($order);
+            /**
+             * @var \DDelivery\Order\DDeliveryOrder $order
+             */
             $order->paymentVariant = $cmsOrder['PAY_SYSTEM_ID'];
+            $order->shopRefnum = $orderId;
             $ddeliveryUI->saveFullOrder($order);
 
             if(!$ddeliveryUI->onCmsChangeStatus( $orderId, $statusID)) {
