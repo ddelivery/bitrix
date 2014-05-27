@@ -433,17 +433,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     public function getClientAddress() {
         $return = array(array());
         foreach($this->getOrderProps() as $prop){
-            if($prop['IS_LOCATION'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID'].'_val'])) {
-                $return[0][0] = $this->formData['ORDER_PROP_'.$prop['ID'].'_val'];
-            }
-            if($prop['CODE'] == 'CITY' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
-                $return[0][1] = $this->formData['ORDER_PROP_'.$prop['ID']];
-            }
             if($prop['CODE'] == 'ADDRESS' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
-                $return[0][2] = $this->formData['ORDER_PROP_'.$prop['ID']];
+                $return[0] = $this->formData['ORDER_PROP_'.$prop['ID']];
+                break;
             }
         }
-        $return[0] = implode(' ', $return[0]);
 
         return $return;
     }
