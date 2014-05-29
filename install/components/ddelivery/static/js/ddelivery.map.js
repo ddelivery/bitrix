@@ -128,7 +128,6 @@ Map = (function () {
                 })
                 .add('click', function (e) {
                     var target = e.get('target');
-                    t = target;
                     // Вернет все геобъекты
                     var geoObjects = target.properties.get('geoObjects');
                     if (geoObjects) { // Клик по кластеру
@@ -150,7 +149,31 @@ Map = (function () {
                         }
 
                         // Вычисляем центр и зум которые нам нужны, отступ 20 - первое число которое указал и оно нормально работает
-                        var centerAndZoom = ymaps.util.bounds.getCenterAndZoom(bound, yamap.container.getSize(), ymaps.projection.wgs84Mercator, {margin:20});
+                        //var centerAndZoom = ymaps.util.bounds.getCenterAndZoom(bound, yamap.container.getSize(), ymaps.projection.wgs84Mercator, {margin:20});
+
+
+                        // Отсупы с всех сторон
+                        var correctSize = [35, $('.map-popup__main__right').width()+10, 25, 35]; // top, right, bottom, left
+                        var displayMapSize = yamap.container.getSize();
+                        displayMapSize = [
+                            displayMapSize[0] - correctSize[1] - correctSize[3],
+                            displayMapSize[1] - correctSize[0] - correctSize[2]];
+
+                        // Получаем зум для неперекрытого квадрата
+                        var centerAndZoomFake = ymaps.util.bounds.getCenterAndZoom(bound, displayMapSize,
+                            ymaps.projection.wgs84Mercator);
+
+                        // Теперь двигаем видимый центр в реальный центр
+                        var projection = yamap.options.get('projection');
+                        var pixelCenter = projection.toGlobalPixels( centerAndZoomFake.center, centerAndZoomFake.zoom );
+                        centerAndZoom = {center:[], zoom:centerAndZoomFake.zoom};
+                        centerAndZoom.center = projection.fromGlobalPixels(
+                            [
+                                pixelCenter[0] - correctSize[3]/2 + correctSize[1]/2,
+                                pixelCenter[1] - correctSize[2]/2 + correctSize[0]/2
+                            ],
+                            centerAndZoomFake.zoom
+                        );
 
                         // Точки эквивалентны в допустимой погрешности и зумить есть куда
                         if (!ymaps.util.math.areEqual(bound[0], bound[1], 0.0002) && yamap.getZoom() != yamap.options.get('maxZoom')) {
@@ -297,10 +320,11 @@ Map = (function () {
 
         placeEvent: function () {
             $('.map-popup__main__right .places a').click(function () {
-                if($('.map-popup__main__right .places').hasClass('info-open')){
-                    return;
-                }
                 if (current_points.length > 0) {
+                    if(current_points.length == 1){
+                        return;
+                    }
+
                     var id = parseInt($(this).data('id'));
                     if (current_point.company_id != parseInt($(this).data('id'))) {
                         for (var i = 0; i < current_points.length; i++) {

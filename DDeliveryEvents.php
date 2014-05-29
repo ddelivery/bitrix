@@ -369,7 +369,7 @@ class DDeliveryEvents
                 'TITLE' => '¬ыводить стоимость забора в цене доставки',
                 "TYPE" => "CHECKBOX",
                 "DEFAULT" => 'N',
-                "GROUP" => "type",
+                "GROUP" => "price",
             ),
         );
 
