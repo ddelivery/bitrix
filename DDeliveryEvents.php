@@ -15,7 +15,7 @@ class DDeliveryEvents
     {
         include(__DIR__.'/install/version.php');
         /** @var $arModuleVersion string[] */
-
+        $select = ddeliveryFromCp1251('Выбрать');
         $html = '
             <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
             <script type="text/javascript" src="/bitrix/components/ddelivery/static/jquery.the-modal.js"></script>
@@ -27,16 +27,16 @@ class DDeliveryEvents
                 <span><script>
                     document.write(DDeliveryIntegration.getStatus());
                 </script></span>
-                <a href="javascript:DDeliveryIntegration.openPopup()">Выбрать</a>
+                <a href="javascript:DDeliveryIntegration.openPopup()">'.$select.'</a>
             </span>';
         $html = str_replace(array("\n", "\r"), array(' ', ''), $html);
 
         return array(
             /* Basic description */
             "SID" => "ddelivery",
-            "NAME" => GetMessage('DIGITAL_DELIVERY_NAME'),
-            "DESCRIPTION" => GetMessage('DIGITAL_DELIVERY_DESCRIPTION'),
-            "DESCRIPTION_INNER" => GetMessage('DIGITAL_DELIVERY_DESCRIPTION_INNER'),
+            "NAME" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_NAME')),
+            "DESCRIPTION" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_DESCRIPTION')),
+            "DESCRIPTION_INNER" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_DESCRIPTION_INNER')),
             "BASE_CURRENCY" => "RUB",//COption::GetOptionString("sale", "default_currency", "RUB"),
 
             "HANDLER" => __FILE__,
@@ -52,7 +52,7 @@ class DDeliveryEvents
             /* Список профилей */
             "PROFILES" => array(
                 "all" => array(
-                    "TITLE" => GetMessage('DIGITAL_DELIVERY_PROFILE_NAME'),
+                    "TITLE" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_PROFILE_NAME')),
                     "DESCRIPTION" => $html,
                     "RESTRICTIONS_WEIGHT" => array(0),
                     "RESTRICTIONS_SUM" => array(0),
@@ -63,6 +63,7 @@ class DDeliveryEvents
     /* Запрос конфигурации службы доставки */
     function GetConfig()
     {
+        global $APPLICATION;
         $dbProps = CSaleOrderProps::GetList(
             array("SORT" => "ASC"),
             array(
@@ -107,7 +108,6 @@ class DDeliveryEvents
                 BX.remove(el);
             });
         </script>';
-
         $arConfig = array(
             "CONFIG_GROUPS" => array(
                 "general" => GetMessage('DIGITAL_DELIVERY_CONFIG_GROUPS_GENERAL'),
@@ -150,7 +150,6 @@ class DDeliveryEvents
 
                 "SEND_STATUS" => array(
                     "TYPE" => 'DROPDOWN',
-                    "VALUES" => $sendStatusValues,
                     "DEFAULT" => "P",
                     "TITLE" => 'Статус для отправки',
                     "POST_TEXT" => '<br>Выберите статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>
@@ -163,7 +162,6 @@ class DDeliveryEvents
                     "DEFAULT" => "FIO",
                     "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_PROP_FIO'),
                     "GROUP" => "general",
-                    "VALUES" => $props,
                     'POST_TEXT' => 'Выберите поле, соответствующее полю ФИО в вашей системе',
                 ),
                 "PROP_PHONE" => array(
@@ -171,7 +169,6 @@ class DDeliveryEvents
                     "DEFAULT" => "PHONE",
                     "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_PROP_PHONE'),
                     "GROUP" => "general",
-                    "VALUES" => $props,
                 ),
             )
         );
@@ -191,7 +188,11 @@ class DDeliveryEvents
             $iblockProperty = array(0 => GetMessage('DIGITAL_DELIVERY_DEFAULT'));
             $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['OFFERS_IBLOCK_ID']));
             while($prop = $res->Fetch()){
-                $iblockProperty[$prop['ID']] = $prop['NAME'];
+                if (defined('BX_UTF')) {
+                    $iblockProperty[$prop['ID']] = $APPLICATION->ConvertCharset($prop['NAME'], 'utf-8', 'cp1251');
+                }else{
+                    $iblockProperty[$prop['ID']] = $prop['NAME'];
+                }
             }
 
 
@@ -374,6 +375,10 @@ class DDeliveryEvents
         );
 
         // var_dump($arConfig);
+        $arConfig = $APPLICATION->ConvertCharsetArray($arConfig, 'cp1251', SITE_CHARSET);
+        $arConfig['CONFIG']['SEND_STATUS']['VALUES'] = $sendStatusValues;
+        $arConfig['CONFIG']['PROP_FIO']['VALUES'] = $props;
+        $arConfig['CONFIG']['PROP_PHONE']['VALUES'] = $props;
 
         return $arConfig;
     }
@@ -504,7 +509,7 @@ class DDeliveryEvents
                 $itemList[] = $arBasket;
             }
             if(empty($itemList)){
-                return array( "RESULT" => "ERROR", 'ERROR' => 'Корзина в сейсии пуста');
+                return array( "RESULT" => "ERROR", 'ERROR' => ddeliveryFromCp1251('Корзина в сейсии пуста'));
             }
             //END TODO
 
@@ -518,7 +523,7 @@ class DDeliveryEvents
 
         return array(
             "RESULT" => "ERROR",
-            "ERROR" => GetMessage('DIGITAL_DELIVERY_EMPTY_POINT')
+            "ERROR" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_EMPTY_POINT'))
         );
     }
 

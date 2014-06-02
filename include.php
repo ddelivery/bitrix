@@ -5,6 +5,14 @@ if(!CModule::IncludeModule("sale") || !CModule::IncludeModule("catalog")) {
 
 IncludeModuleLangFile(__FILE__);
 
+function ddeliveryFromCp1251($str) {
+    if (!defined('BX_UTF')) {
+        return $str;
+    }
+    global $APPLICATION;
+    return $APPLICATION->ConvertCharset($str, 'cp1251', 'utf-8');
+}
+
 \Bitrix\Main\Loader::registerAutoLoadClasses(
     'ddelivery',
     array(

@@ -15,6 +15,20 @@ Class ddelivery extends CModule
     public $NEED_MAIN_VERSION = '14.5.0';
     public $NEED_MODULES = array('catalog', 'sale');
 
+    function GetMessage($name, $aReplace=false)
+    {
+        $msg = GetMessage($name, $aReplace);
+        return $this->fromCp1251($msg);
+    }
+
+    function fromCp1251($str) {
+        if (!defined('BX_UTF')) {
+            return $str;
+        }
+        global $APPLICATION;
+        return $APPLICATION->ConvertCharset($str, 'cp1251', SITE_CHARSET);
+    }
+
     function __construct()
     {
         $arModuleVersion = array();
@@ -27,11 +41,11 @@ Class ddelivery extends CModule
             $this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
         }
 
-        $this->PARTNER_NAME = GetMessage('DIGITAL_DELIVERY_PARTNER_NAME');
+        $this->PARTNER_NAME = $this->GetMessage('DIGITAL_DELIVERY_PARTNER_NAME');
         $this->PARTNER_URI = 'http://ddelivery.ru/';
 
-        $this->MODULE_NAME = GetMessage('DIGITAL_DELIVERY_MODULE_NAME');
-        $this->MODULE_DESCRIPTION = GetMessage('DIGITAL_DELIVERY_MODULE_DESCRIPTION');
+        $this->MODULE_NAME = $this->GetMessage('DIGITAL_DELIVERY_MODULE_NAME');
+        $this->MODULE_DESCRIPTION = $this->GetMessage('DIGITAL_DELIVERY_MODULE_DESCRIPTION');
     }
 
     public function DoInstall() {
@@ -41,7 +55,7 @@ Class ddelivery extends CModule
         if (is_array($this->NEED_MODULES) && !empty($this->NEED_MODULES)) {
             foreach ($this->NEED_MODULES as $module) {
                 if (!IsModuleInstalled($module)) {
-                    $this->ShowForm('ERROR', GetMessage('DIGITAL_DELIVERY_NEED_MODULES', array('#MODULE#' => $module)));
+                    $this->ShowForm('ERROR', $this->GetMessage('DIGITAL_DELIVERY_NEED_MODULES', array('#MODULE#' => $module)));
                     return;
                 }
             }
@@ -63,7 +77,7 @@ Class ddelivery extends CModule
             $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
         }
         else
-            $this->ShowForm('ERROR', GetMessage('DIGITAL_DELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
+            $this->ShowForm('ERROR', $this->GetMessage('DIGITAL_DELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
     }
 
     private function ShowForm($typeIn, $messageIn, $installOkIn = false) {
@@ -71,7 +85,7 @@ Class ddelivery extends CModule
         $installOk = $installOkIn;
         $type = $typeIn;
         $message = $messageIn;
-        $APPLICATION->SetTitle(GetMessage('DIGITAL_DELIVERY_MODULE_NAME'));
+        $APPLICATION->SetTitle($this->GetMessage('DIGITAL_DELIVERY_MODULE_NAME'));
         $APPLICATION->IncludeAdminFile(GetMessage("CATALOG_INSTALL_TITLE"), __DIR__."/step1.php");
     }
 
