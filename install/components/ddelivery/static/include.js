@@ -15,8 +15,21 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
             return status;
         };
 
+        function hideCover() {
+            document.body.removeChild(document.getElementById('ddelivery_cover'));
+        }
+
+        function showPrompt() {
+            var cover = document.createElement('div');
+            cover.id = 'ddelivery_cover';
+            document.body.appendChild(cover);
+            document.getElementById('ddelivery_container').style.display = 'block';
+        }
+
         th.openPopup = function(){
-            jQuery('#ddelivery_popup').html('').modal().open();
+            showPrompt();
+            document.getElementById('ddelivery_popup').innerHTML = '';
+            //jQuery('#ddelivery_popup').html('').modal().open();
             var params = {
                 formData: {}
             };
@@ -26,12 +39,16 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
 
             var callback = {
                 close: function(){
-                    jQuery.modal().close();
+                    hideCover();
+                    document.getElementById('ddelivery_container').style.display = 'none';
                 },
                 change: function(data) {
                     status = data.comment;
                     $('#ddelivery span').html(data.comment);
-                    jQuery.modal().close();
+
+                    hideCover();
+                    document.getElementById('ddelivery_container').style.display = 'none';
+
                     $('#ID_DELIVERY_ddelivery_all').click();
                 }
             };
@@ -45,16 +62,13 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
         $('BODY').append("<style>" +
             // Скрываем ненужную кнопку
             " #delivery_info_ddelivery_all a{display: none;} " +
-            // Стили попапа
-            " .modal { background: #eee; width: 1000px; margin: 10px auto; border: 3px solid #666; padding: 0px; } " +
-            " .modal .close { float: right; text-decoration: none; font-size: 40px; cursor: pointer; } " +
-            " .themodal-lock { overflow: hidden; } " +
-            " .themodal-overlay { position: fixed; bottom: 0; left: 0; top: 0;right: 0; z-index: 100; overflow: auto; -webkit-overflow-scrolling: touch; } " +
-            " .themodal-overlay > * { -webkit-transform: translateZ(0px); } " +
-            " .themodal-overlay { background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); zoom: 1; z-index:1000; } " +
-            " #ddelivery a{ color: #12a9e1; font-size: 16px; } " +
+            " #ddelivery_popup { display: inline-block; vertical-align: middle; margin: 10px auto; width: 1000px; height: 650px;} " +
+            " #ddelivery_container { position: fixed; top: 0; left: 0; z-index: 9999;display: none; width: 100%; height: 100%; text-align: center;  } " +
+            " #ddelivery_container:before { display: inline-block; height: 100%; content: ''; vertical-align: middle;} " +
+            " #ddelivery_cover {  position: fixed; top: 0; left: 0; z-index: 9000; width: 100%; height: 100%; background-color: #000; background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); } " +
+
             "</style>" +
-            '<div class="modal" id="ddelivery_popup" style="display: none"></div>');
+            '<div id="ddelivery_container"><div id="ddelivery_popup"></div></div>');
 
         return th;
     })();

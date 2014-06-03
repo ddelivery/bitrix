@@ -17,9 +17,6 @@ class DDeliveryEvents
         /** @var $arModuleVersion string[] */
         $select = ddeliveryFromCp1251('Выбрать');
         $html = '
-            <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-            <script type="text/javascript" src="/bitrix/components/ddelivery/static/jquery.the-modal.js"></script>
-
             <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
             <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
 
