@@ -281,7 +281,7 @@ Map = (function () {
             });
 
             $('.map-popup__info__btn a').click(function(){
-                DDeliveryIframe.ajaxPage({action:'contactForm', point: current_point._id, type:1});
+                DDeliveryIframe.ajaxPage({action:'contactForm', point: current_point._id, type:1, custom: current_point.is_custom ? 1 : ''});
             });
 
             $(window).on('ddeliveryCityPlace', function (e, city) {
@@ -308,14 +308,8 @@ Map = (function () {
             });
 
             // Удаляем старые поинты, какраз пока ждем ответа ajax
-            var pointsRemove = [];
-            for (var pointKey in points) {
-                var point = points[pointKey];
-                if (point.display) {
-                    pointsRemove.push(point);
-                }
-            }
-            clusterer.remove(pointsRemove);
+            points = [];
+            clusterer.removeAll();
         },
 
         placeEvent: function () {
@@ -434,7 +428,7 @@ Map = (function () {
             $('.map-popup__info').fadeIn();
 
             DDeliveryIframe.ajaxData(
-                {action: 'mapGetPoint', id: point._id},
+                {action: 'mapGetPoint', id: point._id, 'custom': point.is_custom ? 1 : ''},
                 function (data) {
                     if(typeof(data.length) == 'undefined') { // object
                         $('.map-popup__info__table .rub').html(data.point.total_price);

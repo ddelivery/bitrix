@@ -675,6 +675,8 @@ class DDeliveryUI
         {
             throw new DDeliveryException('Точка не найдена');
         }
+
+        $this->shop->filterPointsCourier(array($courierPoint), $this->getOrder());
         return $courierPoint;
     }
 
@@ -1349,14 +1351,28 @@ class DDeliveryUI
                     return;
                 case 'mapGetPoint':
                     if(!empty($request['id'])) {
-                        $pointSelf = $this->getSelfPointByID((int)$request['id'], $this->order);
+                        if(isset($request['custom']) && $request['custom']) {
+                            $points = $this->shop->filterPointsSelf(array(), $this->getOrder());
+                            $pointSelf = false;
+                            foreach($points as $point) {
+                                if($point->_id == $request['id']) {
+                                    $pointSelf = $point;
+                                    break;
+                                }
+                            }
+                        }else{
+                            $pointSelf = $this->getSelfPointByID((int)$request['id'], $this->order);
+                        }
                         if(empty($pointSelf)) {
                             echo json_encode(array('point'=>array()));
-                        }
-                        $selfCompanyList = $this->shop->filterSelfInfo(array($pointSelf->getDeliveryInfo()));
-                        if(empty($selfCompanyList)){
-                            echo json_encode(array('point'=>array()));
                             return;
+                        }
+                        if(empty($pointSelf->is_custom)) {
+                            $selfCompanyList = $this->shop->filterSelfInfo(array($pointSelf->getDeliveryInfo()));
+                            if(empty($selfCompanyList)){
+                                echo json_encode(array('point'=>array()));
+                                return;
+                            }
                         }
 
                         echo json_encode(array(
@@ -1392,7 +1408,19 @@ class DDeliveryUI
         }
         if(!empty($request['point']) && isset($request['type'])) {
             if ( $request['type'] == DDeliverySDK::TYPE_SELF ) {
-                $this->order->setPoint($this->getSelfPointByID($request['point'], $this->order));
+                if(isset($request['custom']) && $request['custom']) {
+                    $points = $this->shop->filterPointsSelf(array(), $this->getOrder());
+                    $pointSelf = false;
+                    foreach($points as $point) {
+                        if($point->_id == $request['point']) {
+                            $pointSelf = $point;
+                            break;
+                        }
+                    }
+                }else{
+                    $pointSelf = $this->getSelfPointByID((int)$request['point'], $this->order);
+                }
+                $this->order->setPoint($pointSelf);
             }elseif($request['type'] == DDeliverySDK::TYPE_COURIER){
                 $this->order->setPoint($this->getCourierPointByCompanyID($request['point'], $this->order));
             }
@@ -1636,27 +1664,25 @@ class DDeliveryUI
         if(in_array(Sdk\DDeliverySDK::TYPE_COURIER, $this->supportedTypes)) {
             $courierCompanyList = $this->getCourierPointsForCity($this->order);
             if(!empty($courierCompanyList)){
-                $courierCompanyList = $this->shop->filterPointsCourier($courierCompanyList, $this->order);
-                if($courierCompanyList){
-                    $minPrice = PHP_INT_MAX;
-                    $minTime = PHP_INT_MAX;
+                $minPrice = PHP_INT_MAX;
+                $minTime = PHP_INT_MAX;
 
-                    foreach($courierCompanyList as $courierCompany){
-                        $deliveryInfo = $courierCompany->getDeliveryInfo();
-                        if($minPrice > $deliveryInfo->clientPrice) {
-                            $minPrice = $deliveryInfo->clientPrice;
-                        }
-                        if($minTime > $deliveryInfo->delivery_time_min) {
-                            $minTime = $deliveryInfo->delivery_time_min;
-                        }
+                foreach($courierCompanyList as $courierCompany){
+                    $deliveryInfo = $courierCompany->getDeliveryInfo();
+                    if($minPrice > $deliveryInfo->clientPrice) {
+                        $minPrice = $deliveryInfo->clientPrice;
                     }
-                    $data['courier'] = array(
-                        'minPrice' => $minPrice,
-                        'minTime' => $minTime,
-                        'timeStr' => Utils::plural($minTime, 'дня', 'дней', 'дней', 'дней', false),
-                        'disabled' => false
-                    );
+                    if($minTime > $deliveryInfo->delivery_time_min) {
+                        $minTime = $deliveryInfo->delivery_time_min;
+                    }
                 }
+                $data['courier'] = array(
+                    'minPrice' => $minPrice,
+                    'minTime' => $minTime,
+                    'timeStr' => Utils::plural($minTime, 'дня', 'дней', 'дней', 'дней', false),
+                    'disabled' => false
+                );
+
             }
         }
         return $data;
@@ -1791,7 +1817,7 @@ class DDeliveryUI
      * Возвращает дополнительную информацию по компаниям доставки
      * @return array
      */
-    public function getCompanySubInfo()
+    static public function getCompanySubInfo()
     {
         // pack забита для тех у кого нет иконки
         return array(
