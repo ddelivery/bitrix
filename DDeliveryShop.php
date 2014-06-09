@@ -5,6 +5,7 @@
  * Time: 10:42
  * @var CMain $APPLICATION
  */
+use Bitrix\Main\Config\Configuration;
 use DDelivery\Order\DDeliveryProduct;
 
 class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
@@ -35,6 +36,23 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             $this->config = $config;
             $this->formData = $formData;
         }
+    }
+
+    /**
+     * Настройки базы данных
+     * @return array
+     */
+    public function getDbConfig()
+    {
+        $configurations = Configuration::getInstance()->get('connections');
+        $mysql = $configurations['default'];
+        return array(
+            'type' => self::DB_MYSQL,
+            'dsn' => 'mysql:host='.$mysql['host'].';dbname='.$mysql['database'],
+            'user' => $mysql['login'],
+            'pass' => $mysql['password'],
+            'prefix' => 'ddelivery_',
+        );
     }
 
     protected function getOrderProps()
@@ -219,7 +237,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function getPathByDB()
     {
-        return __DIR__.'/db.sqlite';
+        return '';
     }
 
     /**

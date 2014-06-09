@@ -5,6 +5,8 @@
  * Time: 11:48
  */
 
+use DDelivery\DDeliveryUI;
+
 IncludeModuleLangFile(__FILE__);
 
 
@@ -72,6 +74,37 @@ Class ddelivery extends CModule
             RegisterModule($this->MODULE_ID);
 
             CModule::IncludeModule("sale");
+
+
+            $ddeliveryConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+            $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], array(), array());
+            $ddeliveryUI = new DDeliveryUI($IntegratorShop, true);
+
+            global $DB;
+
+            try{
+                $DB->Query('SET NAMES utf8');
+                $ddeliveryUI->createTables();
+
+                //// Импорт из ps_dd_cities.sql
+                $tempLine = '';
+                $lines = file(__DIR__.'/ps_dd_cities.sql');
+                foreach ($lines as $line)
+                {
+                    if (substr($line, 0, 2) == '--' || $line == '')
+                        continue;
+
+                    $tempLine .= $line;
+                    if (substr(trim($line), -1, 1) == ';')
+                    {
+                        $DB->Query($tempLine);
+                        $tempLine = '';
+                    }
+                }
+
+            }catch (Exception $e){}
+
+
 
 
             $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
