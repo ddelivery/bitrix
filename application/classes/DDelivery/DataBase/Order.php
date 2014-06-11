@@ -530,6 +530,17 @@ class Order {
 			
 		return  $this->pdo->lastInsertId();
 	}
+
+    /**
+     * Удалить все заказы
+     * @return bool
+     */
+    public function cleanOrders( )
+    {
+        $delete = "DELETE FROM orders ";
+        $stmt = $this->pdo->prepare($delete);
+        return $stmt->execute();
+    }
 	
 	public function selectByID( $id )
 	{
@@ -557,5 +568,5 @@ class Order {
 		$this->pdo->commit();
 		return $data;
 	}
-	
+
 }

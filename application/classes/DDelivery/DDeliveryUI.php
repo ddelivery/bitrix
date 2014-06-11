@@ -1558,6 +1558,7 @@ class DDeliveryUI
         }
 
         $this->order->localId = $this->saveFullOrder($this->order);
+
         switch($request['action']) {
             case 'map':
                 echo $this->renderMap();
@@ -1595,13 +1596,19 @@ class DDeliveryUI
         } elseif($point instanceof DDeliveryPointCourier) {
             $comment = 'Доставка курьером по адресу '.$this->order->getFullAddress();
         }
+        $pointDDInfo = $this->shop->filterSelfInfo(array($point->getDeliveryInfo()));
+        if(!count($pointDDInfo)) {
+            return '';
+        }
+        $pointDDInfo = reset($pointDDInfo);
+
         $this->shop->onFinishChange($this->order->localId, $this->order, $point);
         return json_encode(array(
             'html'=>'',
             'js'=>'change',
             'comment'=>htmlspecialchars($comment),
             'orderId' => $this->order->localId,
-            'clientPrice'=>$point->getDeliveryInfo()->clientPrice,
+            'clientPrice'=>$pointDDInfo->clientPrice,
             'userInfo' => $this->getDDUserInfo($this->order->localId),
         ));
     }
@@ -1836,7 +1843,7 @@ class DDeliveryUI
         }else{
             return '';
         }
-        if($requiredFieldMask == 0) {
+        if($requiredFieldMask == 0){
             return $this->renderChange();
         }
 
@@ -1952,6 +1959,16 @@ class DDeliveryUI
         $currentOrder->toFlat = $item->to_flat;
         $currentOrder->toEmail = $item->to_email;
         $currentOrder->comment = $item->comment;
+    }
+
+    /**
+     * Удалить все заказы
+     * @return bool
+     */
+    public function deleteAllOrders()
+    {
+        $orderDB = new DataBase\Order($this->pdo, $this->pdoTablePrefix);
+        return $orderDB->cleanOrders();
     }
 
 
