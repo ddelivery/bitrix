@@ -44,7 +44,7 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
                 },
                 change: function(data) {
                     status = data.comment;
-                    $('#ddelivery span').html(data.comment);
+                    document.getElementById('ddelivery').getElementsByTagName('SPAN').innerHTML = data.comment;
 
                     hideCover();
                     document.getElementById('ddelivery_container').style.display = 'none';
@@ -57,18 +57,19 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined')
 
             return void(0);
         };
-
-
-        $('BODY').append("<style>" +
-            // Скрываем ненужную кнопку
+        var style = document.createElement('STYLE');
+        style.innerHTML = // Скрываем ненужную кнопку
             " #delivery_info_ddelivery_all a{display: none;} " +
             " #ddelivery_popup { display: inline-block; vertical-align: middle; margin: 10px auto; width: 1000px; height: 650px;} " +
             " #ddelivery_container { position: fixed; top: 0; left: 0; z-index: 9999;display: none; width: 100%; height: 100%; text-align: center;  } " +
             " #ddelivery_container:before { display: inline-block; height: 100%; content: ''; vertical-align: middle;} " +
-            " #ddelivery_cover {  position: fixed; top: 0; left: 0; z-index: 9000; width: 100%; height: 100%; background-color: #000; background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); } " +
-
-            "</style>" +
-            '<div id="ddelivery_container"><div id="ddelivery_popup"></div></div>');
+            " #ddelivery_cover {  position: fixed; top: 0; left: 0; z-index: 9000; width: 100%; height: 100%; background-color: #000; background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); } ";
+        var body = document.getElementsByTagName('body')[0];
+        body.appendChild(style);
+        var div = document.createElement('div');
+        div.innerHTML = '<div id="ddelivery_popup"></div>';
+        div.id = 'ddelivery_container';
+        body.appendChild(div);
 
         return th;
     })();

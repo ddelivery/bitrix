@@ -17,6 +17,7 @@ class DDeliveryEvents
         /** @var $arModuleVersion string[] */
         $select = ddeliveryFromCp1251('Выбрать');
         $html = '
+            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
             <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
             <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
 
@@ -141,7 +142,7 @@ class DDeliveryEvents
 
                 "SECTION_PROP" => array(
                     'TYPE'=>'SECTION',
-                    'TITLE'=>'Соответствие полей',
+                    'TITLE'=>'Соответствие полей (Выберите поля, соответствующее полям в вашей системе)',
                     "GROUP" => "general",
                 ),
 
@@ -149,7 +150,7 @@ class DDeliveryEvents
                     "TYPE" => 'DROPDOWN',
                     "DEFAULT" => "P",
                     "TITLE" => 'Статус для отправки',
-                    "POST_TEXT" => '<br>Выберите статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>
+                    "POST_TEXT" => '<br>Статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>
                             Помните, что отправка означает готовность отгрузить заказ на следующий рабочий день.',
                     "GROUP" => "general",
                 ),
@@ -159,7 +160,7 @@ class DDeliveryEvents
                     "DEFAULT" => "FIO",
                     "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_PROP_FIO'),
                     "GROUP" => "general",
-                    'POST_TEXT' => 'Выберите поле, соответствующее полю ФИО в вашей системе',
+                    'POST_TEXT' => '',
                 ),
                 "PROP_PHONE" => array(
                     "TYPE"=>"DROPDOWN",

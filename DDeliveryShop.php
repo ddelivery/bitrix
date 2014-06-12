@@ -114,7 +114,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         if(defined('BX_UTF')){
             return $string;
         }
-        return \Bitrix\Main\Text\Encoding::convertEncodingArray($string, 'CP1251', 'UTF-8');
+        global $APPLICATION;
+        return $APPLICATION->convertCharsetarray($string, 'CP1251', 'UTF-8');
     }
 
     /**
@@ -379,7 +380,10 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function aroundPriceStep()
     {
-        return (float) $this->config('AROUND_STEP');
+        $result = (float) $this->config('AROUND_STEP');
+        if($result == 0)
+            $result = 1;
+        return $result;
     }
 
     /**

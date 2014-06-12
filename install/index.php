@@ -9,12 +9,11 @@ use DDelivery\DDeliveryUI;
 
 IncludeModuleLangFile(__FILE__);
 
-
 Class ddelivery extends CModule
 {
     public $MODULE_ID = "ddelivery";
     public $MODULE_GROUP_RIGHTS = 'N';
-    public $NEED_MAIN_VERSION = '14.5.0';
+    public $NEED_MAIN_VERSION = '14.0.0';
     public $NEED_MODULES = array('catalog', 'sale');
 
     function GetMessage($name, $aReplace=false)
@@ -63,11 +62,9 @@ Class ddelivery extends CModule
             }
         }
         if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
-            $eventManager = \Bitrix\Main\EventManager::getInstance();
-
-            $eventManager->registerEventHandlerCompatible('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
-            $eventManager->registerEventHandlerCompatible('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-            $eventManager->registerEventHandlerCompatible('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+            RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
+            RegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
+            RegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
             if(!symlink(__DIR__."/components/ddelivery", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")){
                 CopyDirFiles(__DIR__."/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
             }
@@ -77,6 +74,11 @@ Class ddelivery extends CModule
 
 
             $ddeliveryConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+
+            include_once(__DIR__.'/../include.php');
+            include_once(__DIR__.'/../DDeliveryEvents.php');
+            include_once(__DIR__.'/../DDeliveryShop.php');
+
             $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DDeliveryUI($IntegratorShop, true);
 
@@ -125,11 +127,9 @@ Class ddelivery extends CModule
     public function DoUninstall() {
         if ($GLOBALS['APPLICATION']->GetGroupRight('main') < 'W')
             return;
-        $eventManager = \Bitrix\Main\EventManager::getInstance();
-
-        $eventManager->unRegisterEventHandler('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
-        $eventManager->unRegisterEventHandler('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-        $eventManager->unRegisterEventHandler('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+        UnRegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
+        UnRegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
+        UnRegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
 
 
         if(is_link($_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")) {

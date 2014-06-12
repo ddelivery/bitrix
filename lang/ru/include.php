@@ -1,6 +1,6 @@
 <?
 $MESS["DIGITAL_DELIVERY_NOT_INSTALL"] = "Модуль DDelivery не настроен";
-$MESS["DIGITAL_DELIVERY_NAME"] = "DDelivery";
+$MESS["DIGITAL_DELIVERY_NAME"] = "DDelivery - (агрегатор служб доставки)";
 $MESS["DIGITAL_DELIVERY_DESCRIPTION"] = "Доставка через DDelivery мега крутая штука.";
 $MESS["DIGITAL_DELIVERY_DESCRIPTION_INNER"] = "Уважаемые пользователи!<br>
     Мы постарались сделать настройки наиболее гибкими, но от вас потребуется внимательность при выборе параметров.<br>
@@ -52,7 +52,7 @@ $MESS["DIGITAL_DELIVERY_CONFIG_PAYMENT_TYPE"] = 'Тип оплаты';
 $MESS["DIGITAL_DELIVERY_CONFIG_PAYMENT_TYPE_ANY"] = 'Любая';
 $MESS["DIGITAL_DELIVERY_CONFIG_PAYMENT_TYPE_ONLINE"] = 'Предоплата возможностями магазина';
 $MESS["DIGITAL_DELIVERY_CONFIG_PAYMENT_TYPE_OFFLINE"] = 'При получении заказа';
-$MESS["DIGITAL_DELIVERY_DEFAULT"] = 'Габариты по умолчанию';
+$MESS["DIGITAL_DELIVERY_DEFAULT"] = 'Значение из параметров торгового каталога';
 $MESS["DIGITAL_DELIVERY_X"] = "Ширина";
 $MESS["DIGITAL_DELIVERY_Y"] = "Высота";
 $MESS["DIGITAL_DELIVERY_Z"] = 'Длина';
