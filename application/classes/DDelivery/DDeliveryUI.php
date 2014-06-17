@@ -445,21 +445,7 @@ class DDeliveryUI
         $order->paymentVariant = $payment;
         $order->shopRefnum = $shopOrderID;
         $order->localStatus = $status;
-        /*
-        if( $this->shop->isStatusToSendOrder( $status, $order) )
-        {   
 
-            if( $order->type == DDeliverySDK::TYPE_SELF ) {
-                $order->ddeliveryID = $this->createSelfOrder($order);
-            } else if( $order->type == DDeliverySDK::TYPE_COURIER ) {
-                $order->ddeliveryID = $this->createCourierOrder($order);
-            }else{
-                throw new DDeliveryException('Not support order type');
-            }
-            $this->saveFullOrder($order);
-            return (bool)$order->ddeliveryID;
-        }
-        */
         $id = $this->saveFullOrder($order);
         return (bool)$id;
     }
@@ -482,28 +468,6 @@ class DDeliveryUI
     	return $orderDB->setShopOrderID($id, $paymentVariant, $status, $shopOrderID);
     }
 
-    /**
-     * Инициализирует заказ по id из заказов локальной БД, в контексте текущего UI
-     *
-     * @param int $id id заказа
-     *
-     * @throws DDeliveryException
-     *
-     * @return DDeliveryOrder[]
-     */
-    public function initIntermediateOrder( $id )
-    {
-        $orderDB = new DataBase\Order($this->pdo, $this->pdoTablePrefix);
-        if(!$id)
-            return false;
-        $orders = $orderDB->getOrderList(array( $id ));
-        if( count($orders) )
-        {
-            $item = $orders[0];
-            $this->_initOrderInfo( $this->order,  $item);
-        }
-        return true;
-    }
 
     /**
      * Инициализирует массив заказов из массива id заказов локальной БД
@@ -1366,7 +1330,8 @@ class DDeliveryUI
     public function render($request)
     {
         if(!empty($request['order_id'])) {
-            $this->initIntermediateOrder($request['order_id']);
+            $orders =  $this->initOrder( array($request['order_id']) );
+            $this->order = $orders[0];
         }
 
         if(isset($request['action'])) {
@@ -1837,8 +1802,10 @@ class DDeliveryUI
         }
         $type = $this->getOrder()->type;
         if($this->getOrder()->type == DDeliverySDK::TYPE_COURIER) {
+            $displayCityName.=', '.$point->getDeliveryInfo()->delivery_company_name;
             $requiredFieldMask = $this->shop->getCourierRequiredFields();
         }elseif($this->getOrder()->type == DDeliverySDK::TYPE_SELF) {
+            $displayCityName.=' '. $point->address;
             $requiredFieldMask = $this->shop->getSelfRequiredFields();
         }else{
             return '';
@@ -1971,5 +1938,17 @@ class DDeliveryUI
         return $orderDB->cleanOrders();
     }
 
+    /**
+     * Получить описание статуса на DDelivery
+     *
+     * @param $ddStatus код статуса на DDeivery
+     *
+     * @return string
+     */
+    public function getDDStatusDescription( $ddStatus )
+    {
+       $statusProvider = new DDStatusProvider();
+       return $statusProvider->getOrderDescription( $ddStatus );
+    }
 
 }
