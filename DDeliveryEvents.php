@@ -514,9 +514,13 @@ class DDeliveryEvents
 
             $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
-            $ddeliveryUI->initIntermediateOrder($ddOrderId);
-            $price = $ddeliveryUI->getOrder()->getPoint()->getDeliveryInfo()->clientPrice;
-            return array("RESULT" => "OK", 'VALUE'=>$price);
+            $orders = $ddeliveryUI->initOrder(array($ddOrderId));
+            if(!empty($orders)){
+                $price = $orders[0]->getPoint()->getDeliveryInfo()->clientPrice;
+                return array("RESULT" => "OK", 'VALUE'=>$price);
+            }else{
+                return array( "RESULT" => "ERROR", 'ERROR' => 'Not Find order');
+            }
         }
 
         return array(
