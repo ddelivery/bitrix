@@ -1562,6 +1562,8 @@ class DDeliveryUI
             $comment = 'Доставка курьером по адресу '.$this->order->getFullAddress();
         }
         $pointDDInfo = $this->shop->filterSelfInfo(array($point->getDeliveryInfo()));
+
+        $this->saveFullOrder($this->order);
         if(!count($pointDDInfo)) {
             return '';
         }
@@ -1950,5 +1952,6 @@ class DDeliveryUI
        $statusProvider = new DDStatusProvider();
        return $statusProvider->getOrderDescription( $ddStatus );
     }
+
 
 }
