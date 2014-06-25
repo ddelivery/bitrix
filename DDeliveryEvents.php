@@ -609,16 +609,16 @@ class DDeliveryEvents
             if(empty($order))
                 return;
             $order = reset($order);
+            $order->localStatus = $statusID;
             /**
              * @var \DDelivery\Order\DDeliveryOrder $order
              */
-            $order->paymentVariant = $cmsOrder['PAY_SYSTEM_ID'];
-            $order->shopRefnum = $orderId;
+            $ddeliveryOrderID = $ddeliveryUI->sendOrderToDD( $order, $orderId, $cmsOrder['PAY_SYSTEM_ID']);
             $ddeliveryUI->saveFullOrder($order);
-
-            if(!$ddeliveryUI->onCmsChangeStatus( $orderId, $statusID)) {
+            if(!$ddeliveryOrderID) {
                 throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
             }
+            CSaleOrder::Update($orderId, array("TRACKING_NUMBER" => $ddeliveryOrderID));
         }
         catch(\DDelivery\DDeliveryException $e)
         {
