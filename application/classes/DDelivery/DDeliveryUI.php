@@ -336,6 +336,7 @@ class DDeliveryUI
         {
             throw new DDeliveryException('Точка не найдена');
         }
+        $this->shop->filterSelfInfo( array($order->getPoint()->getDeliveryInfo()) );
         return $order->getPoint()->getDeliveryInfo()->clientPrice;
     }
 
@@ -467,6 +468,7 @@ class DDeliveryUI
     	$orderDB = new DataBase\Order($this->pdo, $this->pdoTablePrefix);
     	return $orderDB->setShopOrderID($id, $paymentVariant, $status, $shopOrderID);
     }
+
 
 
     /**

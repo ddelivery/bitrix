@@ -6,6 +6,8 @@
  */
 
 use DDelivery\DDeliveryUI;
+use DDelivery\Point\DDeliveryPointCourier;
+use DDelivery\Point\DDeliveryPointSelf;
 
 include_once(__DIR__.'/application/bootstrap.php');
 
@@ -50,7 +52,7 @@ class DDeliveryEvents
             /* Список профилей */
             "PROFILES" => array(
                 "all" => array(
-                    "TITLE" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_PROFILE_NAME')),
+                    "TITLE" => 'ddelivery.ru',//ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_PROFILE_NAME')),
                     "DESCRIPTION" => $html,
                     "RESTRICTIONS_WEIGHT" => array(0),
                     "RESTRICTIONS_SUM" => array(0),
@@ -516,8 +518,15 @@ class DDeliveryEvents
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
             $orders = $ddeliveryUI->initOrder(array($ddOrderId));
             if(!empty($orders)){
-                $price = $orders[0]->getPoint()->getDeliveryInfo()->clientPrice;
-                return array("RESULT" => "OK", 'VALUE'=>$price);
+                $point = $orders[0]->getPoint();
+                if ($point instanceof DDeliveryPointSelf) {
+                    $point = $ddeliveryUI->getSelfPointByID($point->_id, $orders[0]);
+                    $IntegratorShop->filterSelfInfo(array($point->getDeliveryInfo()));
+                } elseif($point instanceof DDeliveryPointCourier) {
+                    $point = $ddeliveryUI->getCourierPointByCompanyID($point->getDeliveryInfo()->delivery_company, $orders[0]);
+                }
+                $price = $point->getDeliveryInfo()->clientPrice;
+                return array("RESULT" => "OK", 'VALUE'=>(float)$price);
             }else{
                 return array( "RESULT" => "ERROR", 'ERROR' => 'Not Find order');
             }

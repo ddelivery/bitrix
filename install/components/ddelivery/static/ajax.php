@@ -47,13 +47,14 @@ foreach($_REQUEST['formData'] as $key => $value) {
 
 
 $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
-
-
-$ddeliveryUI = new DDeliveryUI($IntegratorShop);
-$IntegratorShop->setDDeliveryUI($ddeliveryUI);
-// В зависимости от параметров может выводить полноценный html или json
-$ddeliveryUI->render(isset($_REQUEST) ? $_REQUEST : array());
-
+try{
+    $ddeliveryUI = new DDeliveryUI($IntegratorShop);
+    $IntegratorShop->setDDeliveryUI($ddeliveryUI);
+    // В зависимости от параметров может выводить полноценный html или json
+    $ddeliveryUI->render(isset($_REQUEST) ? $_REQUEST : array());
+}catch (Exception $e){
+    var_dump($e);
+}
 
 
 require_once($_SERVER["DOCUMENT_ROOT"].BX_ROOT."/modules/main/include/epilog_after.php");
