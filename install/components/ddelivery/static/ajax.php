@@ -53,7 +53,8 @@ try{
     // В зависимости от параметров может выводить полноценный html или json
     $ddeliveryUI->render(isset($_REQUEST) ? $_REQUEST : array());
 }catch (Exception $e){
-    var_dump($e);
+    //var_dump($e);
+    throw $e;
 }
 
 
