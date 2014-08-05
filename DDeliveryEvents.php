@@ -6,8 +6,10 @@
  */
 
 use DDelivery\DDeliveryUI;
+use DDelivery\Order\DDeliveryOrder;
 use DDelivery\Point\DDeliveryPointCourier;
 use DDelivery\Point\DDeliveryPointSelf;
+use DDelivery\Sdk\DDeliverySDK;
 
 include_once(__DIR__.'/application/bootstrap.php');
 
@@ -121,6 +123,13 @@ class DDeliveryEvents
                     "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_API_KEY'),
                     "GROUP" => "general",
                     "POST_TEXT"=> 'Ключ можно получить в личном кабинете DDelivery.ru, зарегестрировашись на сайте (для новых клиентов).'.$jsHack,
+                ),
+                "API_KEY_KIT"=> array(
+                    "TYPE" => "STRING",
+                    "DEFAULT" => '',
+                    "TITLE" => 'API Ключ КИТ',
+                    "GROUP" => "general",
+                    "POST_TEXT"=> 'Ключ для компании КИТ',
                 ),
                 "TEST_MODE"=> array(
                     "TYPE" => "DROPDOWN",
@@ -406,6 +415,7 @@ class DDeliveryEvents
             26 => 'СДЭК Посылка',
             25 => 'СДЭК Посылка Самовывоз',
             24 => 'Сити Курьер',
+            40 => 'КИТ',
         );
     }
 
@@ -617,7 +627,25 @@ class DDeliveryEvents
             $order = $ddeliveryUI->initOrder(array($property['VALUE']));
             if(empty($order))
                 return;
+            /**
+             * @var DDeliveryOrder $order
+             */
             $order = reset($order);
+
+            if($order->type == DDeliverySDK::TYPE_COURIER && $order->getPoint()->getDeliveryInfo()->get('delivery_company') == 40 ) {
+                if(!empty($DDConfig['CONFIG']['CONFIG']['API_KEY_KIT']['VALUE'])) {
+                    $DDConfig['CONFIG']['CONFIG']['API_KEY'] = $DDConfig['CONFIG']['CONFIG']['API_KEY_KIT'];
+                    $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
+                    $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
+                    $order = $ddeliveryUI->initOrder(array($property['VALUE']));
+                    if(empty($order))
+                        return;
+                    /**
+                     * @var DDeliveryOrder $order
+                     */
+                    $order = reset($order);
+                }
+            }
             $order->localStatus = $statusID;
             /**
              * @var \DDelivery\Order\DDeliveryOrder $order

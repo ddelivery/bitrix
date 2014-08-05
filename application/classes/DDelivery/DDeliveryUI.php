@@ -120,6 +120,7 @@ class DDeliveryUI
         {
             $productList = $this->shop->getProductsFromCart();
             $this->order = new DDeliveryOrder( $productList );
+            //var_dump($this->order);
             $this->order->amount = $this->shop->getAmount();
         }
         $this->messager = new Sdk\DDeliveryMessager($this->shop->isTestMode());
