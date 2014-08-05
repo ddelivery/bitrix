@@ -34,9 +34,9 @@ class DDeliveryEvents
         return array(
             /* Basic description */
             "SID" => "ddelivery",
-            "NAME" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_NAME')),
-            "DESCRIPTION" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_DESCRIPTION')),
-            "DESCRIPTION_INNER" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_DESCRIPTION_INNER')),
+            "NAME" => ddeliveryFromCp1251(GetMessage('DDELIVERY_NAME')),
+            "DESCRIPTION" => ddeliveryFromCp1251(GetMessage('DDELIVERY_DESCRIPTION')),
+            "DESCRIPTION_INNER" => ddeliveryFromCp1251(GetMessage('DDELIVERY_DESCRIPTION_INNER')),
             "BASE_CURRENCY" => "RUB",//COption::GetOptionString("sale", "default_currency", "RUB"),
 
             "HANDLER" => __FILE__,
@@ -52,7 +52,7 @@ class DDeliveryEvents
             /* Список профилей */
             "PROFILES" => array(
                 "all" => array(
-                    "TITLE" => 'ddelivery.ru',//ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_PROFILE_NAME')),
+                    "TITLE" => 'ddelivery.ru',//ddeliveryFromCp1251(GetMessage('DDELIVERY_PROFILE_NAME')),
                     "DESCRIPTION" => $html,
                     "RESTRICTIONS_WEIGHT" => array(0),
                     "RESTRICTIONS_SUM" => array(0),
@@ -110,64 +110,63 @@ class DDeliveryEvents
         </script>';
         $arConfig = array(
             "CONFIG_GROUPS" => array(
-                "general" => GetMessage('DIGITAL_DELIVERY_CONFIG_GROUPS_GENERAL'),
-                "type" => GetMessage('DIGITAL_DELIVERY_CONFIG_GROUPS_TYPE'),
-                "price" => GetMessage("DIGITAL_DELIVERY_CONFIG_GROUPS_PRICE")
+                "general" => GetMessage('DDELIVERY_CONFIG_GROUPS_GENERAL'),
+                "type" => GetMessage('DDELIVERY_CONFIG_GROUPS_TYPE'),
+                "price" => GetMessage("DDELIVERY_CONFIG_GROUPS_PRICE")
             ),
             "CONFIG" => array(
                 "API_KEY"=> array(
                     "TYPE" => "STRING",
                     "DEFAULT" => '',
-                    "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_API_KEY'),
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_API_KEY'),
                     "GROUP" => "general",
-                    "POST_TEXT"=> 'Ключ можно получить в личном кабинете DDelivery.ru, зарегестрировашись на сайте (для новых клиентов).'.$jsHack,
+                    "POST_TEXT"=> GetMessage('DDELIVERY_CONFIG_API_KEY_DESCRIPTION').$jsHack,
                 ),
                 "TEST_MODE"=> array(
                     "TYPE" => "DROPDOWN",
                     "DEFAULT" => 1,
-                    "TITLE" => 'Режим работы',
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_MODE'),
                     "VALUES" => array(
-                        1 => 'Тестирование(stage)',
-                        0 => 'Боевое(client)',
+                        1 => GetMessage('DDELIVERY_CONFIG_MODE_STAGE'),
+                        0 => GetMessage('DDELIVERY_CONFIG_MODE_CLIENT'),
                     ),
-                    "POST_TEXT"=> "Для отладки работы модуля, используйте пожалуйста режим Тестирование",
+                    "POST_TEXT"=> GetMessage('DDELIVERY_CONFIG_MODE_POST_TEXT'),
                     "GROUP" => "general",
                 ),
                 "DECLARED_PERCENT"=>array(
                     "TYPE" => "INTEGER",
                     "DEFAULT" => "100",
-                    "TITLE" => 'Какой % от стоимости товара страхуется',
-                    'POST_TEXT' => 'Вы можете снизить оценочную стоимость для уменьшения стоимости доставки за счет снижения размера страховки.',
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_DECLARED_PERCENT_TITLE'),
+                    'POST_TEXT' => GetMessage('DDELIVERY_CONFIG_DECLARED_PERCENT_POST_TEXT'),
                     "GROUP" => "general",
                     'CHECK_FORMAT' => 'NUMBER',
                 ),
 
                 "SECTION_PROP" => array(
-                    'TYPE'=>'SECTION',
-                    'TITLE'=>'Соответствие полей (Выберите поля, соответствующее полям в вашей системе)',
+                    'TYPE' => 'SECTION',
+                    'TITLE' => GetMessage('DDELIVERY_CONFIG_SECTION_PROP_TITLE'),
                     "GROUP" => "general",
                 ),
 
                 "SEND_STATUS" => array(
                     "TYPE" => 'DROPDOWN',
                     "DEFAULT" => "P",
-                    "TITLE" => 'Статус для отправки',
-                    "POST_TEXT" => '<br>Статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>
-                            Помните, что отправка означает готовность отгрузить заказ на следующий рабочий день.',
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_SEND_STATUS_TITLE'),
+                    "POST_TEXT" => GetMessage('DDELIVERY_CONFIG_SEND_STATUS_POST_TEXT'),
                     "GROUP" => "general",
                 ),
 
                 "PROP_FIO" => array(
                     "TYPE"=>"DROPDOWN",
                     "DEFAULT" => "FIO",
-                    "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_PROP_FIO'),
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_FIO'),
                     "GROUP" => "general",
                     'POST_TEXT' => '',
                 ),
                 "PROP_PHONE" => array(
                     "TYPE"=>"DROPDOWN",
                     "DEFAULT" => "PHONE",
-                    "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_PROP_PHONE'),
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_PHONE'),
                     "GROUP" => "general",
                 ),
             )
@@ -185,7 +184,7 @@ class DDeliveryEvents
                 "GROUP" => "general",
             );
 
-            $iblockProperty = array(0 => GetMessage('DIGITAL_DELIVERY_DEFAULT'));
+            $iblockProperty = array(0 => GetMessage('DDELIVERY_DEFAULT'));
             $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['OFFERS_IBLOCK_ID']));
             while($prop = $res->Fetch()){
                 /*if (defined('BX_UTF')) {
@@ -199,7 +198,7 @@ class DDeliveryEvents
             foreach(array('X', 'Y', 'Z', 'W') as $key2){
                 $arConfig['CONFIG'][$key.'_'.$key2] = array(
                     "TYPE" => "DROPDOWN",
-                    "TITLE" => GetMessage('DIGITAL_DELIVERY_'.$key2),
+                    "TITLE" => GetMessage('DDELIVERY_'.$key2),
                     "GROUP" => "general",
                     "DEFAULT" => 0,
                     "VALUES" => $iblockProperty,
@@ -220,35 +219,40 @@ class DDeliveryEvents
             "DEFAULT_X" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "100",
-                "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_X'),
+                "TITLE" => GetMessage('DDELIVERY_CONFIG_DEFAULT_X'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Z" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "100",
-                "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Z'),
+                "TITLE" => GetMessage('DDELIVERY_CONFIG_DEFAULT_Z'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_Y" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "100",
-                "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_Y'),
+                "TITLE" => GetMessage('DDELIVERY_CONFIG_DEFAULT_Y'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             "DEFAULT_W" => array(
                 "TYPE" => "INTEGER",
                 "DEFAULT" => "100",
-                "TITLE" => GetMessage('DIGITAL_DELIVERY_CONFIG_DEFAULT_W'),
+                "TITLE" => GetMessage('DDELIVERY_CONFIG_DEFAULT_W'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             // Способы доставки
+            'COMPANY_TITLE' => array (
+                'TYPE' => 'SECTION',
+                'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE'),
+                'GROUP' => 'type',
+            ),
             'SUPPORTED_TYPE' => array(
                 "TYPE" => "DROPDOWN",
-                "TITLE" => 'Способы доставки',
+                "TITLE" => GetMessage('DDELIVERY_CONFIG_SUPPORTED_TYPE'),
                 "GROUP" => "type",
                 "DEFAULT" => '0',
                 "VALUES" => array(
@@ -259,11 +263,6 @@ class DDeliveryEvents
             ),
         );
 
-        $arConfig['CONFIG']['PRICE_IF_SECTION'] = array (
-            'TYPE' => 'SECTION',
-            'TITLE' => 'Выберите компании доставки, которые вы бы хотели сделать доступными для ваших клиентов',
-            'GROUP' => 'type',
-        );
 
 
         $companyList = self::companyList();
@@ -282,8 +281,7 @@ class DDeliveryEvents
 
         $arConfig['CONFIG']['PRICE_IF_SECTION'] = array (
             'TYPE' => 'SECTION',
-            'TITLE' => 'Как меняется стоимость доставки в зависимости от размера заказа.в руб. Вы можете гибко настроить
-                условия доставки, чтобы учесть вашу маркетинговую политику.',
+            'TITLE' => GetMessage('DDELIVERY_CONFIG_PRICE_IF_SECTION'),
             'GROUP' => 'price',
         );
 
@@ -534,7 +532,7 @@ class DDeliveryEvents
 
         return array(
             "RESULT" => "ERROR",
-            "ERROR" => ddeliveryFromCp1251(GetMessage('DIGITAL_DELIVERY_EMPTY_POINT'))
+            "ERROR" => GetMessage('DDELIVERY_EMPTY_POINT')
         );
     }
 

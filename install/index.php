@@ -45,8 +45,8 @@ Class ddelivery_ddelivery extends CModule
         $this->PARTNER_NAME = 'DDelivery';
         $this->PARTNER_URI = 'http://ddelivery.ru/';
 
-        $this->MODULE_NAME = $this->GetMessage('DIGITAL_DELIVERY_MODULE_NAME');
-        $this->MODULE_DESCRIPTION = $this->GetMessage('DIGITAL_DELIVERY_MODULE_DESCRIPTION');
+        $this->MODULE_NAME = $this->GetMessage('DDELIVERY_MODULE_NAME');
+        $this->MODULE_DESCRIPTION = $this->GetMessage('DDELIVERY_MODULE_DESCRIPTION');
     }
 
     public function DoInstall() {
@@ -56,7 +56,7 @@ Class ddelivery_ddelivery extends CModule
         if (is_array($this->NEED_MODULES) && !empty($this->NEED_MODULES)) {
             foreach ($this->NEED_MODULES as $module) {
                 if (!IsModuleInstalled($module)) {
-                    $this->ShowForm('ERROR', $this->GetMessage('DIGITAL_DELIVERY_NEED_MODULES', array('#MODULE#' => $module)));
+                    $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => $module)));
                     return;
                 }
             }
@@ -137,7 +137,7 @@ Class ddelivery_ddelivery extends CModule
             $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
         }
         else
-            $this->ShowForm('ERROR', $this->GetMessage('DIGITAL_DELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
+            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
     }
 
     private function ShowForm($typeIn, $messageIn, $installOkIn = false) {
@@ -145,7 +145,7 @@ Class ddelivery_ddelivery extends CModule
         $installOk = $installOkIn;
         $type = $typeIn;
         $message = $messageIn;
-        $APPLICATION->SetTitle($this->GetMessage('DIGITAL_DELIVERY_MODULE_NAME'));
+        $APPLICATION->SetTitle($this->GetMessage('DDELIVERY_MODULE_NAME'));
         $APPLICATION->IncludeAdminFile(GetMessage("CATALOG_INSTALL_TITLE"), __DIR__."/step1.php");
     }
 

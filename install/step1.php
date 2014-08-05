@@ -13,7 +13,7 @@ if($message!==false):
 endif;
 if($installOk) {
     echo BeginNote();
-    echo fromCp1251(GetMessage("DIGITAL_DELIVERY_MOD_INST_OK"));
+    echo fromCp1251(GetMessage("DDELIVERY_MOD_INST_OK"));
     echo EndNote();
 }
 ?>
