@@ -14,7 +14,7 @@ function ddeliveryFromCp1251($str) {
 }
 
 \Bitrix\Main\Loader::registerAutoLoadClasses(
-    'ddelivery',
+    'ddelivery.ddelivery',
     array(
         'DDeliveryShop' => 'DDeliveryShop.php',
         'DDeliveryEvents' => 'DDeliveryEvents.php',
