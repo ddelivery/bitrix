@@ -632,7 +632,7 @@ class DDeliveryEvents
              */
             $order = reset($order);
 
-            if($order->type == DDeliverySDK::TYPE_COURIER && $order->getPoint()->getDeliveryInfo()->get('delivery_company') == 40 ) {
+            if($order->type == DDeliverySDK::TYPE_COURIER && $order->getPoint()->getDeliveryInfo()->get('delivery_company') == 41 ) {
                 if(!empty($DDConfig['CONFIG']['CONFIG']['API_KEY_KIT']['VALUE'])) {
                     $DDConfig['CONFIG']['CONFIG']['API_KEY'] = $DDConfig['CONFIG']['CONFIG']['API_KEY_KIT'];
                     $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
