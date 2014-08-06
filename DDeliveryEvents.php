@@ -188,11 +188,11 @@ class DDeliveryEvents
             $iblockProperty = array(0 => GetMessage('DIGITAL_DELIVERY_DEFAULT'));
             $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['OFFERS_IBLOCK_ID']));
             while($prop = $res->Fetch()){
-                if (defined('BX_UTF')) {
+                /*if (defined('BX_UTF')) {
                     $iblockProperty[$prop['ID']] = $APPLICATION->ConvertCharset($prop['NAME'], 'utf-8', 'cp1251');
-                }else{
+                }else{*/
                     $iblockProperty[$prop['ID']] = $prop['NAME'];
-                }
+                //}
             }
 
 

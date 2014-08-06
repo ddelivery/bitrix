@@ -9,17 +9,17 @@ use DDelivery\DDeliveryUI;
 
 IncludeModuleLangFile(__FILE__);
 
-Class ddelivery extends CModule
+Class ddelivery_ddelivery extends CModule
 {
-    public $MODULE_ID = "ddelivery";
+    var $MODULE_ID = "ddelivery.ddelivery";
     public $MODULE_GROUP_RIGHTS = 'N';
     public $NEED_MAIN_VERSION = '14.0.0';
     public $NEED_MODULES = array('catalog', 'sale');
 
     function GetMessage($name, $aReplace=false)
     {
-        $msg = GetMessage($name, $aReplace);
-        return $this->fromCp1251($msg);
+        return GetMessage($name, $aReplace);
+        //return $this->fromCp1251($msg);
     }
 
     function fromCp1251($str) {
@@ -42,7 +42,7 @@ Class ddelivery extends CModule
             $this->MODULE_VERSION_DATE = $arModuleVersion["VERSION_DATE"];
         }
 
-        $this->PARTNER_NAME = $this->GetMessage('DIGITAL_DELIVERY_PARTNER_NAME');
+        $this->PARTNER_NAME = 'DDelivery';
         $this->PARTNER_URI = 'http://ddelivery.ru/';
 
         $this->MODULE_NAME = $this->GetMessage('DIGITAL_DELIVERY_MODULE_NAME');
