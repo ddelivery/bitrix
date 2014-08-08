@@ -17,7 +17,7 @@ class DDeliveryEvents
     {
         include(__DIR__.'/install/version.php');
         /** @var $arModuleVersion string[] */
-        $select = ddeliveryFromCp1251('Выбрать');
+        $select = GetMessage('DDELIVERY_SELECT');
         $html = '
             <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
             <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
@@ -34,9 +34,9 @@ class DDeliveryEvents
         return array(
             /* Basic description */
             "SID" => "ddelivery",
-            "NAME" => ddeliveryFromCp1251(GetMessage('DDELIVERY_NAME')),
-            "DESCRIPTION" => ddeliveryFromCp1251(GetMessage('DDELIVERY_DESCRIPTION')),
-            "DESCRIPTION_INNER" => ddeliveryFromCp1251(GetMessage('DDELIVERY_DESCRIPTION_INNER')),
+            "NAME" => GetMessage('DDELIVERY_NAME'),
+            "DESCRIPTION" => GetMessage('DDELIVERY_DESCRIPTION'),
+            "DESCRIPTION_INNER" => GetMessage('DDELIVERY_DESCRIPTION_INNER'),
             "BASE_CURRENCY" => "RUB",//COption::GetOptionString("sale", "default_currency", "RUB"),
 
             "HANDLER" => __FILE__,
@@ -52,7 +52,7 @@ class DDeliveryEvents
             /* Список профилей */
             "PROFILES" => array(
                 "all" => array(
-                    "TITLE" => 'ddelivery.ru',//ddeliveryFromCp1251(GetMessage('DDELIVERY_PROFILE_NAME')),
+                    "TITLE" => 'ddelivery.ru',
                     "DESCRIPTION" => $html,
                     "RESTRICTIONS_WEIGHT" => array(0),
                     "RESTRICTIONS_SUM" => array(0),
@@ -180,7 +180,7 @@ class DDeliveryEvents
 
             $arConfig['CONFIG'][$key.'_SECTION']= array(
                 'TYPE'=>'SECTION',
-                'TITLE'=> 'Соответствие полей для инфоблока "'.$catalog['NAME'].'"',
+                'TITLE'=> GetMessage('DDELIVERY_CUSTOM_FIELDS', array('#IBLOCK_NAME#' => $catalog['NAME'])),
                 "GROUP" => "general",
             );
 
@@ -211,7 +211,7 @@ class DDeliveryEvents
         $arConfig['CONFIG'] +=  array(
             "SECTION_DEFAULT" => array(
                 'TYPE'=>'SECTION',
-                'TITLE'=>'Габариты по умолчанию',
+                'TITLE'=>GetMessage('DDELIVERY_DEFAULT_SIZE'),
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
@@ -256,16 +256,16 @@ class DDeliveryEvents
                 "GROUP" => "type",
                 "DEFAULT" => '0',
                 "VALUES" => array(
-                    0 => 'ПВЗ и курьеры',
-                    1 => 'ПВЗ DDelivery',
-                    2 => 'Курьеры DDelivery',
+                    0 => GetMessage('DDELIVERY_CONFIG_SUPPORTED_TYPE_ALL'),
+                    1 => GetMessage('DDELIVERY_CONFIG_SUPPORTED_TYPE_PVZ'),
+                    2 => GetMessage('DDELIVERY_CONFIG_SUPPORTED_TYPE_COURIER'),
                 ),
             ),
         );
 
 
 
-        $companyList = self::companyList();
+        $companyList = $APPLICATION->ConvertCharsetArray(self::companyList(), 'cp1251', SITE_CHARSET);
 
         foreach($companyList as $key => $company){
             $arConfig['CONFIG']["COMPANY_".$key] = array(
@@ -290,13 +290,13 @@ class DDeliveryEvents
                 'PRICE_IF_'.$i.'_CONTROL' => array (
                     'TYPE' => 'MULTI_CONTROL_STRING',
                     'MCS_ID' => 'BOX_general_'.$i,
-                    'TITLE' => 'От',
+                    'TITLE' => GetMessage('DDELIVERY_FROM'),
                     'GROUP' => 'price',
                 ),
                 'PRICE_IF_'.$i.'_MIN' => array (
                     'TYPE' => 'STRING',
                     'MCS_ID' => 'BOX_general_'.$i,
-                    'POST_TEXT' => ' до ',
+                    'POST_TEXT' => ' '.GetMessage('DDELIVERY_TO').' ',
                     'SIZE' => 1,
                     'DEFAULT' => '',
                     'GROUP' => 'price',
@@ -305,7 +305,7 @@ class DDeliveryEvents
                 'PRICE_IF_'.$i.'_MAX' => array (
                     'TYPE' => 'STRING',
                     'MCS_ID' => 'BOX_general_'.$i,
-                    'POST_TEXT' => ' стоимость доставки ',
+                    'POST_TEXT' => ' '.GetMessage('DDELIVERY_DELIVERY_PRICE').' ',
                     'SIZE' => 1,
                     'DEFAULT' => '',
                     'GROUP' => 'price',
@@ -318,10 +318,10 @@ class DDeliveryEvents
                     'DEFAULT' => '',
 
                     'VALUES' => array(
-                        1 => 'Клиент оплачивает все',
-                        2 => 'Магазин оплачивает все',
-                        3 => 'Магазин оплачивает % от стоимости доставки',
-                        4 => 'Магазин оплачивает руб. от стоимости доставки',
+                        1 => GetMessage('DDELIVERY_PRICE_CLIENT_ALL'),
+                        2 => GetMessage('DDELIVERY_PRICE_MARKET_ALL'),
+                        3 => GetMessage('DDELIVERY_PRICE_MARKET_PRESENT'),
+                        4 => GetMessage('DDELIVERY_PRICE_MARKET_RUB'),
                     ),
                     'GROUP' => 'price',
                 ),
@@ -340,32 +340,32 @@ class DDeliveryEvents
             'AROUND_CONTROL' => array (
                 'TYPE' => 'MULTI_CONTROL_STRING',
                 'MCS_ID' => 'AROUND',
-                'TITLE' => 'Округление цены доставки для покупателя',
+                'TITLE' => GetMessage('DDELIVERY_AROUND_CONTROL'),
                 'GROUP' => 'price',
             ),
             'AROUND' => array (
                 'TYPE' => 'DROPDOWN',
                 'MCS_ID' => 'AROUND',
-                'POST_TEXT' => ' шаг ',
+                'POST_TEXT' => ' '.GetMessage('DDELIVERY_STEP').' ',
                 'DEFAULT' => 1,
                 'GROUP' => 'price',
                 'VALUES' => array(
-                    2 => 'Вниз',
-                    3 => 'Вверх',
-                    1 => 'Математическое',
+                    2 => GetMessage('DDELIVERY_DOWN'),
+                    3 => GetMessage('DDELIVERY_UP'),
+                    1 => GetMessage('DDELIVERY_ROUND'),
                 ),
             ),
             'AROUND_STEP' => array (
                 'TYPE' => 'STRING',
                 'MCS_ID' => 'AROUND',
-                'POST_TEXT' => ' руб.',
+                'POST_TEXT' => ' '.GetMessage('DDELIVERY_RUR'),
                 'SIZE' => 1,
                 'DEFAULT' => '',
                 'GROUP' => 'price',
                 'CHECK_FORMAT' => 'NUMBER',
             ),
             'PAY_PICKUP' => array(
-                'TITLE' => 'Выводить стоимость забора в цене доставки',
+                'TITLE' => GetMessage('DDELIVERY_PAY_PICKUP'),
                 "TYPE" => "CHECKBOX",
                 "DEFAULT" => 'N',
                 "GROUP" => "price",
@@ -373,7 +373,7 @@ class DDeliveryEvents
         );
 
         // var_dump($arConfig);
-        $arConfig = $APPLICATION->ConvertCharsetArray($arConfig, 'cp1251', SITE_CHARSET);
+        //$arConfig = $APPLICATION->ConvertCharsetArray($arConfig, 'cp1251', SITE_CHARSET);
         $arConfig['CONFIG']['SEND_STATUS']['VALUES'] = $sendStatusValues;
         $arConfig['CONFIG']['PROP_FIO']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_PHONE']['VALUES'] = $props;
@@ -401,6 +401,7 @@ class DDeliveryEvents
             1 => 'PickPoint',
             7 => 'QIWI Post',
             13 => 'КТС',
+            44 => 'Почта России',
             26 => 'СДЭК Посылка',
             25 => 'СДЭК Посылка Самовывоз',
             24 => 'Сити Курьер',
@@ -507,7 +508,7 @@ class DDeliveryEvents
                 $itemList[] = $arBasket;
             }
             if(empty($itemList)){
-                return array( "RESULT" => "ERROR", 'ERROR' => ddeliveryFromCp1251('Корзина в сейсии пуста'));
+                return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_BASKET_EMPTY'));
             }
             //END TODO
 

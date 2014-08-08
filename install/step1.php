@@ -1,19 +1,11 @@
 <?if(!check_bitrix_sessid()) return;
 
-function fromCp1251($str) {
-    if (!defined('BX_UTF')) {
-        return $str;
-    }
-    global $APPLICATION;
-    return $APPLICATION->ConvertCharset($str, 'cp1251', SITE_CHARSET);
-}
-
 if($message!==false):
     echo CAdminMessage::ShowMessage(array('MESSAGE' => $message, 'TYPE' => $type));
 endif;
 if($installOk) {
     echo BeginNote();
-    echo fromCp1251(GetMessage("DDELIVERY_MOD_INST_OK"));
+    echo GetMessage("DDELIVERY_MOD_INST_OK");
     echo EndNote();
 }
 ?>
