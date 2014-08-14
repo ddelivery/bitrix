@@ -55,7 +55,11 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
                 var params = {
                     formData: {}
                 };
-                $($('#ORDER_FORM').serializeArray()).each(function(){
+                var form = $('#ORDER_FORM');
+                if(form.length == 0) {
+                    form = $('#ORDER_FORM_ID_NEW');
+                }
+                $(form.serializeArray()).each(function(){
                     params.formData[this.name] = this.value;
                 });
 
