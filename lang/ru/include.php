@@ -9,6 +9,9 @@ $MESS["DDELIVERY_DESCRIPTION_INNER"] = "Уважаемые пользователи!<br>
     <a target='_blank' href='http://ddelivery.ru/contacts.php?utm_source=partner&utm_medium=referral&utm_campaign=bitrix_admin'>клиентским отделом</a>.";
 $MESS["DDELIVERY_PROFILE_DESCRIPTION"] = "Выберите удобную для вас точку на карте";
 
+$MESS['DDELIVERY_SELECT'] = "Выбрать";
+$MESS['DDELIVERY_BASKET_EMPTY'] = 'Корзина в сейсии пуста';
+
 $MESS["DDELIVERY_CONFIG_GROUPS_GENERAL"] = "Основные";
 $MESS["DDELIVERY_CONFIG_GROUPS_TYPE"] = "Способы доставки";
 $MESS["DDELIVERY_CONFIG_GROUPS_PRICE"] = "Цена доставки";
@@ -43,11 +46,36 @@ $MESS["DDELIVERY_CONFIG_DEFAULT_W"] = "Вес по умолчанию";
 $MESS["DDELIVERY_CONFIG_PROP_FIO"] = "Свойство Ф.И.О.";
 $MESS["DDELIVERY_CONFIG_PROP_PHONE"] = "Свойство телефон";
 
+$MESS["DDELIVERY_CUSTOM_FIELDS"] = 'Соответствие полей для инфоблока "#IBLOCK_NAME#"';
+
 $MESS["DDELIVERY_DEFAULT"] = 'Значение из параметров торгового каталога';
 $MESS["DDELIVERY_X"] = "Ширина";
 $MESS["DDELIVERY_Y"] = "Высота";
 $MESS["DDELIVERY_Z"] = 'Длина';
 $MESS["DDELIVERY_W"] = "Вес";
+$MESS["DDELIVERY_DEFAULT_SIZE"] = "Габариты по умолчанию";
 $MESS["DDELIVERY_EMPTY_POINT"] = "Не выбран пункт доставки";
+
+$MESS["DDELIVERY_CONFIG_SUPPORTED_TYPE_ALL"] = "ПВЗ и курьеры";
+$MESS["DDELIVERY_CONFIG_SUPPORTED_TYPE_PVZ"] = 'ПВЗ DDelivery';
+$MESS["DDELIVERY_CONFIG_SUPPORTED_TYPE_COURIER"] = 'Курьеры DDelivery';
+
+$MESS["DDELIVERY_FROM"] = 'От';
+$MESS["DDELIVERY_TO"] = 'до';
+$MESS["DDELIVERY_DELIVERY_PRICE"] = 'стоимость доставки';
+
+$MESS["DDELIVERY_PRICE_CLIENT_ALL"] = 'Клиент оплачивает все';
+$MESS["DDELIVERY_PRICE_MARKET_ALL"] = 'Магазин оплачивает все';
+$MESS["DDELIVERY_PRICE_MARKET_PRESENT"] = 'Магазин оплачивает % от стоимости доставки';
+$MESS["DDELIVERY_PRICE_MARKET_RUB"] = 'Магазин оплачивает руб. от стоимости доставки';
+
+$MESS["DDELIVERY_AROUND_CONTROL"] = 'Округление цены доставки для покупателя';
+$MESS["DDELIVERY_DOWN"] = 'Вниз';
+$MESS["DDELIVERY_UP"] = 'Вверх';
+$MESS["DDELIVERY_ROUND"] = 'Математическое';
+$MESS["DDELIVERY_RUR"] = 'руб.';
+$MESS["DDELIVERY_STEP"] = 'шаг';
+$MESS["DDELIVERY_PAY_PICKUP"] = 'Выводить стоимость забора в цене доставки';
+
 
 ?>

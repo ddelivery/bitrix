@@ -19,7 +19,6 @@ Class ddelivery_ddelivery extends CModule
     function GetMessage($name, $aReplace=false)
     {
         return GetMessage($name, $aReplace);
-        //return $this->fromCp1251($msg);
     }
 
     function fromCp1251($str) {
