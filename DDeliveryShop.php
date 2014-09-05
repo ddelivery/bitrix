@@ -431,7 +431,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function getClientFirstName() {
         foreach($this->getOrderProps() as $prop){
-            if($prop['IS_PROFILE_NAME'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+            if($prop['IS_PAYER'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
                 return $this->formData['ORDER_PROP_'.$prop['ID']];
             }
         }
