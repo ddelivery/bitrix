@@ -36,7 +36,7 @@ use DDelivery\Adapter\DShopAdapter;
                             <label for="first_name">ФИО</label>
                         </div>
                         <div class="row__inp">
-                            <input type="text" title="Иван Иванов" id="first_name" name="first_name" value="<?=htmlspecialchars(trim($order->firstName))?>" <?if($requiredFieldMask & DShopAdapter::FIELD_REQUIRED_FIRST_NAME):?>req="req"<?endif;?>/>
+                            <input type="text" title="Иван" id="first_name" name="first_name" value="<?=htmlspecialchars(trim($order->firstName))?>" <?if($requiredFieldMask & DShopAdapter::FIELD_REQUIRED_FIRST_NAME):?>req="req"<?endif;?>/>
                             <div class="error-box">
                                 <i>&nbsp;</i> Поле обязательное для заполнения
                             </div>

@@ -14,7 +14,7 @@
             ?>
             <input type="hidden" name="ddelivery_city" value="<?=$cityData['_id']?>"/>
             <div class="delivery-place__title">
-                <input type="text" title="<?=$cityData['display_name']?>"/>
+                <input type="text" title="<?=htmlspecialchars($cityData['display_name'])?>"/>
                 <span><i>&nbsp;</i></span>
             </div>
             <div class="delivery-place__drop">
@@ -55,7 +55,7 @@
                     </td>
                     <td class="col4" style="position: relative">
                         <span>от <strong><span class="min_price"><?=$currentData['minPrice']?></span> <i class="icon-rub">&nbsp;</i></strong></span>
-                        <img src="<?=$staticURL?>img/ajax_loader_min.gif" style="position: absolute; left:10px" class="h">
+                        <img src="<?=$styleUrl?>img/ajax_loader_min.gif" style="position: absolute; left:10px" class="h">
                     </td>
                     <td class="col5">
                         <span>от <strong><span class="min_time"><?=$currentData['minTime']?></span></strong> <span class="time_str"><?=$currentData['timeStr']?></span></span>
@@ -80,7 +80,7 @@
                     </td>
                     <td class="col4" style="position: relative">
                         <span>от <strong><span class="min_price"><?=$currentData['minPrice']?></span> <i class="icon-rub">&nbsp;</i></strong></span>
-                        <img src="<?=$staticURL?>img/ajax_loader_min.gif" style="position: absolute; left:10px" class="h">
+                        <img src="<?=$styleUrl?>img/ajax_loader_min.gif" style="position: absolute; left:10px" class="h">
                     </td>
                     <td class="col5">
                         <span>от <strong><span class="min_time"><?=$currentData['minTime']?></span></strong> <span class="time_str"><?=$currentData['timeStr']?></span></span>

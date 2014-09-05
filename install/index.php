@@ -73,6 +73,8 @@ Class ddelivery_ddelivery extends CModule
 
 
             $ddeliveryConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+            $ddeliveryConfig['ACTIVE'] = 'N';
+            CSaleDeliveryHandler::Set('ddelivery', $ddeliveryConfig, false);
 
             include_once(__DIR__.'/../include.php');
             include_once(__DIR__.'/../DDeliveryEvents.php');
@@ -105,32 +107,7 @@ Class ddelivery_ddelivery extends CModule
 
             $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DDeliveryUI($IntegratorShop, true);
-
-            global $DB;
-
-            try{
-                $DB->Query('SET NAMES utf8');
-                $ddeliveryUI->createTables();
-
-                //// Импорт из ps_dd_cities.sql
-                $tempLine = '';
-                $lines = file(__DIR__.'/ps_dd_cities.sql');
-                foreach ($lines as $line)
-                {
-                    if (substr($line, 0, 2) == '--' || $line == '')
-                        continue;
-
-                    $tempLine .= $line;
-                    if (substr(trim($line), -1, 1) == ';')
-                    {
-                        $DB->Query($tempLine);
-                        $tempLine = '';
-                    }
-                }
-
-            }catch (Exception $e){}
-
-
+            $ddeliveryUI->createTables();
 
 
             $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
@@ -151,6 +128,12 @@ Class ddelivery_ddelivery extends CModule
     public function DoUninstall() {
         if ($GLOBALS['APPLICATION']->GetGroupRight('main') < 'W')
             return;
+
+        global $DB;
+        $DB->Query("DROP TABLE IF EXISTS ddelivery_orders", false, __FILE__.':'.__LINE__);
+        $DB->Query("DROP TABLE IF EXISTS ddelivery_cache", false, __FILE__.':'.__LINE__);
+        $DB->Query("DROP TABLE IF EXISTS ddelivery_ps_dd_cities", false, __FILE__.':'.__LINE__);
+
         UnRegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
         UnRegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
         UnRegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');

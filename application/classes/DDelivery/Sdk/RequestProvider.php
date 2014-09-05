@@ -7,6 +7,7 @@
  */
 
 namespace DDelivery\Sdk;
+use DDelivery\Adapter\DShopAdapter;
 
 
 /**
@@ -145,7 +146,7 @@ class RequestProvider
 			$urlSuffix .= urlencode($key).'='.urlencode($value) . '&';
 		}
 
-        $urlSuffix .= 'sdk_ver='.include(dirname(dirname(dirname(__DIR__))).'/version.php');
+        $urlSuffix .= 'sdk_ver=' . DShopAdapter::SDK_VERSION ;
 
 		return $urlSuffix;
 	}
@@ -159,24 +160,20 @@ class RequestProvider
 	 * @param string $server
 	 * @param string $urlSuffix
 	 */
-	private function _setSpecificOptionsToRequest($method, $action, $server, $urlSuffix)
-	{
-		if( $method == 'get' && ($server == 'cabinet' || $server == 'stage') )
-		{
+	private function _setSpecificOptionsToRequest($method, $action, $server, $urlSuffix){
+		if( $method == 'get' && ($server == 'cabinet' || $server == 'stage') ){
 			$url = $this->serverUrl[$server] . urlencode($this->apiKey) .'/' . urlencode($action) . '.json?';
 			$url .= $urlSuffix;
-			
+
 			curl_setopt($this->curl[$server], CURLOPT_URL, $url);
 		}
-		else if( $method == 'get' && ( $server == 'cabinetnode' || $server == 'stagenode')  )
-		{
+		else if( $method == 'get' && ( $server == 'cabinetnode' || $server == 'stagenode')  ){
 			
 			$url = $this->serverUrl[$server] . '?';
 			$url .= $urlSuffix;
 			curl_setopt($this->curl[$server], CURLOPT_URL, $url);
 		}
-		else if($method == 'post')
-		{
+		else if($method == 'post'){
 			$url = $this->serverUrl[$server] . urlencode($this->apiKey) .'/' . urlencode($action) . '.json';
 			
 			curl_setopt($this->curl[$server], CURLOPT_URL, $url);

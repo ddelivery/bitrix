@@ -20,6 +20,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     private $ddeliveryUI;
 
     /**
+     * @var bool
+     */
+    public $useTaxRate = true;
+
+    /**
      * @param array $config
      * @param array $itemList
      * @param $formData
@@ -244,21 +249,14 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     /**
      * Метод будет вызван когда пользователь закончит выбор способа доставки
      *
-     * @param int $orderId
      * @param \DDelivery\Order\DDeliveryOrder $order
-     * @param bool $customPoint Если true, то заказ обрабатывается магазином
      * @return void
      */
-    public function onFinishChange($orderId, \DDelivery\Order\DDeliveryOrder $order, $customPoint)
+    public function onFinishChange( $order)
     {
-        if($customPoint){
-            // Это условие говорит о том что нужно обрабатывать заказ средствами CMS
-        }else{
-            // Запомни id заказа
-        }
-        $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'] = $orderId;
-
+        $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'] = $order->localId;
     }
+
 
     /**
      * Какой процент от стоимости страхуется
@@ -270,7 +268,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Должен вернуть те компании которые НЕ показываются в курьерке
+     * Должен вернуть те компании которые показываются в курьерке
      * см. список компаний в DDeliveryUI::getCompanySubInfo()
      * @return int[]
      */
@@ -278,15 +276,16 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         $result = array();
         foreach($this->config as $name => $data) {
-            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'N'){
+            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'Y'){
                 $result[] = (int)substr($name, 8);
             }
         }
+
         return $result;
     }
 
     /**
-     * Должен вернуть те компании которые НЕ показываются в самовывозе
+     * Должен вернуть те компании которые показываются в самовывозе
      * см. список компаний в DDeliveryUI::getCompanySubInfo()
      * @return int[]
      */
@@ -294,7 +293,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         $result = array();
         foreach($this->config as $name => $data) {
-            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'N'){
+            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'Y'){
                 $result[] = (int)substr($name, 8);
             }
         }
@@ -373,6 +372,22 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
                 return self::AROUND_ROUND;
         }
     }
+
+    public function aroundPrice($price)
+    {
+        $price = parent::aroundPrice($price);
+        if($this->useTaxRate) {
+            $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+            $taxRate = $DDConfig['TAX_RATE'];
+            $price = round($price*(1+($taxRate/100)), 2);
+            if($DDConfig['PROFILES']['all']['TAX_RATE']) {
+                $taxRate = $DDConfig['PROFILES']['all']['TAX_RATE'];
+                $price = round($price*(1+($taxRate/100)), 2);
+            }
+        }
+        return $price;
+    }
+
 
     /**
      * Шаг округления
@@ -507,6 +522,28 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             \DDelivery\Sdk\DDeliverySDK::TYPE_COURIER,
             \DDelivery\Sdk\DDeliverySDK::TYPE_SELF
         );
+    }
+
+    private function getPaymentVariants($order)
+    {
+        CModule::IncludeModule('sale');
+        $dbResultList = CSalePaySystem::GetList( array(), array(), false, false, array("ID", "NAME") );
+        $result = array();
+        while($paymentSystem = $dbResultList->Fetch()) {
+            $result[] = $paymentSystem['ID'];
+        }
+        return $result;
+    }
+
+    public function getCourierPaymentVariants($order)
+    {
+        return $this->getPaymentVariants($order);
+    }
+
+
+    public function getSelfPaymentVariants($order)
+    {
+        return $this->getPaymentVariants($order);
     }
 
 

@@ -53,11 +53,13 @@ var TypeForm = (function () {
             });
 
             $('.map-popup__main__delivery__next a').click(function () {
+                var cityTitle = $('.delivery-place__title').find('input').attr('title');
                 var radio = $('input[type="radio"]:checked').val();
                 if (radio) {
                     DDeliveryIframe.ajaxPage({
                         type: radio,
-                        city_id: $('input[name=ddelivery_city]').val()
+                        city_id: $('input[name=ddelivery_city]').val(),
+                        city_alias: cityTitle
                     });
                 }
             });
@@ -67,7 +69,7 @@ var TypeForm = (function () {
                 $('.col4 span', table).css('visibility', 'hidden');
                 $('.col5 span', table).css('visibility', 'hidden');
                 $('.col4 img', table).show();
-                DDeliveryIframe.ajaxData({action: 'typeFormDataOnly', city_id: data.id}, function (data) {
+                DDeliveryIframe.ajaxData({action: 'typeFormDataOnly', city_id: data.id, city_alias: data.title}, function (data) {
                     $('.col4 span', table).css('visibility', 'inherit');
                     $('.col5 span', table).css('visibility', 'inherit');
                     $('.col4 img', table).hide();

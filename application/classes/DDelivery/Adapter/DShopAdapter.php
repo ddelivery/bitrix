@@ -11,9 +11,7 @@ namespace DDelivery\Adapter;
 use DDelivery\Order\DDeliveryOrder;
 use DDelivery\Order\DDeliveryProduct;
 use DDelivery\Order\DDStatusProvider;
-use DDelivery\Point\DDeliveryAbstractPoint;
-use DDelivery\Point\DDeliveryPointCourier;
-use DDelivery\Point\DDeliveryPointSelf;
+
 use DDelivery\Sdk\DDeliverySDK;
 
 /**
@@ -21,7 +19,18 @@ use DDelivery\Sdk\DDeliverySDK;
  * @package DDelivery\Adapter
  */
 abstract class DShopAdapter
-{  
+{
+    /**
+     * Тип кеширования централизованый(забираются все точки с сервера)
+     */
+    const CACHING_TYPE_CENTRAL = 'central';
+
+    /**
+     * Тип кеширования локальный(забираются точки с сервера с фильтром по компаниям)
+     */
+    const CACHING_TYPE_INDIVIDUAL = 'individual';
+
+    const SDK_VERSION = '2.0';
     /**
      * Имя редактируется
      */
@@ -142,6 +151,74 @@ abstract class DShopAdapter
     }
 
     /**
+     *
+     * Тип кеширования, для централизированого подхода и для индивидуального решения
+     * разные
+     *
+     * @return string
+     */
+    public function getCachingFormat(){
+        // return DShopAdapter::CACHING_TYPE_CENTRAL;
+        return DShopAdapter::CACHING_TYPE_INDIVIDUAL;
+    }
+
+    /**
+     * Получить название шаблона для сдк ( разные цветовые схемы )
+     *
+     * @return string
+     */
+    public function getTemplate(){
+        return 'default';
+    }
+    /**
+     * Возвращаем сервер для логгирования ошибок
+     */
+    public function getLogginServer(){
+        return 'http://service.ddelivery.ru/loggin.php';
+    }
+
+    /**
+     *
+     * Перед возвратом точек самовывоза фильтровать их по определенным правилам
+     *
+     * @param $companyArray
+     * @param DDeliveryOrder $order
+     * @return mixed
+     */
+    public function finalFilterSelfCompanies( $companyArray, DDeliveryOrder $order ){
+        return $companyArray;
+    }
+
+    /**
+     *
+     *  Перед возвратом компаний курьерок фильтровать их по определенным правилам
+     *
+     * @param $companyArray
+     * @param DDeliveryOrder $order
+     * @return mixed
+     */
+    public function finalFilterCourierCompanies( $companyArray, DDeliveryOrder $order ){
+        return $companyArray;
+    }
+
+    /**
+     * Получить доступные способы оплаты для Самовывоза ( можно анализировать содержимое order )
+     * @param $order DDeliveryOrder
+     * @return array
+     */
+    public function getSelfPaymentVariants( $order ){
+        return array();
+    }
+
+    /**
+     * Получить доступные способы оплаты для курьера ( можно анализировать содержимое order )
+     * @param $order DDeliveryOrder
+     * @return array
+     */
+    public function getCourierPaymentVariants( $order ){
+        return array();
+    }
+    /**
      * Возвращает путь до файла базы данных sqlite, положите его в место не доступное по прямой ссылке
      * @return string
      */
@@ -157,8 +234,7 @@ abstract class DShopAdapter
      * @param $cmsStatus mixed
      * @return bool
      */
-    public function isStatusToSendOrder( $cmsStatus )
-    {
+    public function isStatusToSendOrder( $cmsStatus ){
         return false;
     }
 
@@ -168,7 +244,7 @@ abstract class DShopAdapter
      */
     public function getCacheExpired()
     {
-        return 1440; // 60*24
+        return 720; // 60*24
     }
 
     /**
@@ -208,7 +284,7 @@ abstract class DShopAdapter
         return array();
     }
 
-        /**
+    /**
      *
      * Используется при отправке заявки на сервер DD для указания стартового статуса
      *
@@ -219,8 +295,7 @@ abstract class DShopAdapter
      *
      * @return bool
      */
-    public function isConfirmedStatus( $localStatus )
-    {
+    public function isConfirmedStatus( $localStatus ){
         return true;
     }
 
@@ -231,25 +306,36 @@ abstract class DShopAdapter
      * @return mixed;
      *
      */
-    public function getLocalStatusByDD( $ddStatus  )
-    {
-        if( !empty($this->cmsOrderStatus[$ddStatus]) )
-        {
+    public function getLocalStatusByDD( $ddStatus  ){
+        if( !empty($this->cmsOrderStatus[$ddStatus]) ){
             return $this->cmsOrderStatus[$ddStatus];
         }
         return 0;
     }
 
-    /**
-     * Получает статус заказа, при определенном статусе отправляем заказ на сервер ddelivery
-     * 
-     * @return $mixed
-     */
-    public function getStatusToSendOrder()
-    {
-        return 1;
-    }
 
+    /**
+     *
+     * Если корзина пуста, добавляем демо-данные
+     *
+     * @return array
+     */
+    public function getDemoCardData(){
+        $products = array();
+
+        $products[] = new DDeliveryProduct(
+            1,	//	int $id id товара в системе и-нет магазина
+            20,	//	float $width длинна
+            13,	//	float $height высота
+            25,	//	float $length ширина
+            0.5,	//	float $weight вес кг
+            1000,	//	float $price стоимостьв рублях
+            1,	//	int $quantity количество товара
+            'Веселый клоун'	//	string $name Название вещи
+        );
+        $products[] = new DDeliveryProduct(2, 10, 13, 15, 0.3, 1500, 2, 'Грустный клоун');
+        return $products;
+    }
     /**
      * Возвращает товары находящиеся в корзине пользователя, реализует кеширование getProductsFromCart
      * @return DDeliveryProduct[]
@@ -258,6 +344,9 @@ abstract class DShopAdapter
     {
         if(!$this->productsFromCart) {
             $this->productsFromCart = $this->_getProductsFromCart();
+            if( count( $this->productsFromCart ) < 1 ){
+                $this->productsFromCart = $this->getDemoCardData();
+            }
         }
         return $this->productsFromCart;
     }
@@ -340,39 +429,6 @@ abstract class DShopAdapter
     public function onChangePoint( DDeliveryAbstractPoint $point) {}
      */
 
-    /**
-     * Если необходимо фильтрует курьеров и добавляет новых
-     * Кстати здесь можно отсортировать еще точки
-     *
-     * @param DDeliveryPointCourier[] $courierPoints
-     * @param \DDelivery\Order\DDeliveryOrder $order
-     * @return \DDelivery\Point\DDeliveryPointCourier[]
-     */
-    public function filterPointsCourier($courierPoints, DDeliveryOrder $order) {
-        return $courierPoints;
-    }
-
-    /**
-     * Если необходимо фильтрует пункты самовывоза и добавляет новых
-     *
-     * @param DDeliveryPointSelf[] $selfPoints
-     * @param \DDelivery\Order\DDeliveryOrder $order
-     * @return \DDelivery\Point\DDeliveryPointSelf[]
-     */
-    public function filterPointsSelf($selfPoints, DDeliveryOrder $order) {
-        return $selfPoints;
-    }
-
-    /**
-     * Перед тем как показать точную информацию о стоимости мы сообщаем информацю о ней для изменения
-     *
-     * @param \DDelivery\Point\DDeliveryInfo[] $selfCompanyList
-     * @return \DDelivery\Point\DDeliveryInfo[]
-     */
-    public function filterSelfInfo($selfCompanyList)
-    {
-        return $selfCompanyList;
-    }
 
     /**
      * Если есть необходимость искать точки на сервере ddelivery
@@ -381,8 +437,7 @@ abstract class DShopAdapter
      * 
      * @return boolean
      */
-    public function preGoToFindPoints( $order )
-    {
+    public function preGoToFindPoints( $order ){
         return true;        	
     }
     
@@ -394,17 +449,8 @@ abstract class DShopAdapter
      * 
      * @return float
      */
-    public function sendOrderToDDeliveryServer( $order ) 
-    {
+    public function sendOrderToDDeliveryServer( $order ){
         return true;    	
-    }
-    
-    /**
-     * Возвращает выбраный вариант оплаты
-     * @return float
-     */
-    public function getPaymentVariant( ) {
-    	 return null;
     }
 
     /**
@@ -504,12 +550,12 @@ abstract class DShopAdapter
     public function getCourierRequiredFields()
     {
         // ВВести все обязательно, кроме корпуса
-        return self::FIELD_EDIT_FIRST_NAME | self::FIELD_REQUIRED_FIRST_NAME | self::FIELD_EDIT_SECOND_NAME | self::FIELD_REQUIRED_SECOND_NAME
+        return self::FIELD_EDIT_FIRST_NAME | self::FIELD_REQUIRED_FIRST_NAME
             | self::FIELD_EDIT_PHONE | self::FIELD_REQUIRED_PHONE
             | self::FIELD_EDIT_ADDRESS | self::FIELD_REQUIRED_ADDRESS
             | self::FIELD_EDIT_ADDRESS_HOUSE | self::FIELD_REQUIRED_ADDRESS_HOUSE
             | self::FIELD_EDIT_ADDRESS_HOUSING
-            | self::FIELD_EDIT_ADDRESS_FLAT;
+            | self::FIELD_EDIT_ADDRESS_FLAT | self::FIELD_REQUIRED_ADDRESS_FLAT;
     }
 
     /**
@@ -522,19 +568,37 @@ abstract class DShopAdapter
     {
         // Имя, фамилия, мобилка
         return self::FIELD_EDIT_FIRST_NAME | self::FIELD_REQUIRED_FIRST_NAME
-            | self::FIELD_EDIT_SECOND_NAME | self::FIELD_REQUIRED_SECOND_NAME
-            | self::FIELD_EDIT_PHONE | self::FIELD_REQUIRED_PHONE;
+             | self::FIELD_EDIT_PHONE | self::FIELD_REQUIRED_PHONE;
     }
 
 
     /**
      * Метод будет вызван когда пользователь закончит выбор способа доставки
      *
-     * @param int $orderId
      * @param DDeliveryOrder $order
-     * @param bool $customPoint Если true, то заказ обрабатывается магазином
      * @return bool
      */
-    abstract public function onFinishChange($orderId, DDeliveryOrder $order, $customPoint);
+    abstract public function onFinishChange(  $order);
 
+    /**
+     * Обработка цены перед отдачей в методе getClientPrice
+     *
+     * @param DDeliveryOrder $order
+     * @param $price
+     * @return mixed
+     */
+    public function  processClientPrice(  $order, $price ){
+        return $price;
+    }
+
+    /**
+     * Возможность что - нибудь добавить к информации
+     * при окончании оформления заказа
+     *
+     * @param $order DDeliveryOrder
+     * @param $resultArray
+     */
+    public function onFinishResultReturn( $order, $resultArray ){
+        return $resultArray;
+    }
 }

@@ -383,29 +383,14 @@ class DDeliveryEvents
 
     static public function companyList()
     {
-        return array(
-            4 => 'Boxberry',
-            21 => 'Boxberry Express',
-            29 => 'DPD Classic',
-            23 => 'DPD Consumer',
-            27 => 'DPD ECONOMY',
-            28 => 'DPD Express',
-            20 => 'DPD Parcel',
-            30 => 'EMS',
-            11 => 'Hermes',
-            16 => 'IM Logistics Пушкинская',
-            22 => 'IM Logistics Экспресс',
-            17 => 'IMLogistics',
-            3 => 'Logibox',
-            14 => 'Maxima Express',
-            1 => 'PickPoint',
-            7 => 'QIWI Post',
-            13 => 'КТС',
-            44 => 'Почта России',
-            26 => 'СДЭК Посылка',
-            25 => 'СДЭК Посылка Самовывоз',
-            24 => 'Сити Курьер',
-        );
+        $companyList = DDeliveryUI::getCompanySubInfo();
+        $result = array();
+        global $APPLICATION;
+        foreach($companyList as $id => $company) {
+            $result[$id] = $APPLICATION->ConvertCharsetArray($company['name'], 'utf-8', SITE_CHARSET);
+        }
+
+        return $result;
     }
 
     function GetSettings($strSettings)
@@ -514,17 +499,13 @@ class DDeliveryEvents
 
 
             $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
+            $IntegratorShop->useTaxRate = false;
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
-            $orders = $ddeliveryUI->initOrder(array($ddOrderId));
-            if(!empty($orders)){
-                $point = $orders[0]->getPoint();
-                if ($point instanceof DDeliveryPointSelf) {
-                    $point = $ddeliveryUI->getSelfPointByID($point->_id, $orders[0]);
-                    $IntegratorShop->filterSelfInfo(array($point->getDeliveryInfo()));
-                } elseif($point instanceof DDeliveryPointCourier) {
-                    $point = $ddeliveryUI->getCourierPointByCompanyID($point->getDeliveryInfo()->delivery_company, $orders[0]);
-                }
-                $price = $point->getDeliveryInfo()->clientPrice;
+            $order = $ddeliveryUI->initOrder($ddOrderId);
+
+
+            if(!empty($order)){
+                $price = $ddeliveryUI->getClientPrice($order->getPoint(), $order);
                 return array("RESULT" => "OK", 'VALUE'=>(float)$price);
             }else{
                 return array( "RESULT" => "ERROR", 'ERROR' => 'Not Find order');
@@ -601,7 +582,6 @@ class DDeliveryEvents
     static function OnSaleStatusOrder($orderId, $statusID)
     {
         $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
-
         if(!$property)
             return;
         try{
@@ -613,15 +593,17 @@ class DDeliveryEvents
 
             $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
-            $order = $ddeliveryUI->initOrder(array($property['VALUE']));
+            $order = $ddeliveryUI->initOrder($property['VALUE']);
             if(empty($order))
                 return;
-            $order = reset($order);
             $order->localStatus = $statusID;
+
             /**
              * @var \DDelivery\Order\DDeliveryOrder $order
              */
-            $ddeliveryOrderID = $ddeliveryUI->sendOrderToDD( $order, $orderId, $cmsOrder['PAY_SYSTEM_ID']);
+            $order->shopRefnum = $orderId;
+            $order->paymentVariant = $cmsOrder['PAY_SYSTEM_ID'];
+            $ddeliveryOrderID = $ddeliveryUI->sendOrderToDD( $order);
             $ddeliveryUI->saveFullOrder($order);
             if(!$ddeliveryOrderID) {
                 throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
@@ -631,6 +613,7 @@ class DDeliveryEvents
         catch(\DDelivery\DDeliveryException $e)
         {
             throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
+
         }
 
     }
