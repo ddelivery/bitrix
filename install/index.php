@@ -60,7 +60,9 @@ Class ddelivery_ddelivery extends CModule
                 }
             }
         }
-        if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
+        if(!class_exists('PDO')){
+            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_PDO'));
+        }elseif (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
             RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
             RegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
             RegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
@@ -111,9 +113,9 @@ Class ddelivery_ddelivery extends CModule
 
 
             $this->ShowForm('OK', GetMessage('MOD_INST_OK'), true);
-        }
-        else
+        }else{
             $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_RIGHT_VER', array('#NEED#' => $this->NEED_MAIN_VERSION)));
+        }
     }
 
     private function ShowForm($typeIn, $messageIn, $installOkIn = false) {

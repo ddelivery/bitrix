@@ -42,13 +42,10 @@ class DDeliverySDK {
 	 */
     public function __construct($apiKey, $testMode = true)
     {
-        if($testMode)
-        {
-            $this->server = 'stage';
-        }
-        else
-        {
-            $this->server = 'cabinet';
+        if($testMode){
+            $this->server = RequestProvider::SERVER_STAGE;
+        }else{
+            $this->server = RequestProvider::SERVER_CABINET;
         }
 
         $this->requestProvider = new RequestProvider( $apiKey, $this->server );
@@ -75,6 +72,7 @@ class DDeliverySDK {
      * @param String  $to_house
      * @param String  $to_flat
      * @param String  $to_email
+     * @param String $metadata
      *
      * @throws DDeliveryException
      *
@@ -84,7 +82,7 @@ class DDeliverySDK {
     		                         $dimensionSide2, $dimensionSide3, $shop_refnum,
                                      $confirmed, $weight, $to_name, $to_phone, $goods_description,
     		                         $declaredPrice, $paymentPrice, $to_street, $to_house, $to_flat,
-                                     $to_email = '' )
+                                     $to_email = '', $metadata = '' )
     {
         $params = array(
             'type' => self::TYPE_COURIER,
@@ -104,7 +102,8 @@ class DDeliverySDK {
             'to_street' => $to_street,
             'to_house' => $to_house,
             'to_flat' => $to_flat,
-            'to_email' => $to_email
+            'to_email' => $to_email,
+            'metadata' => $metadata
         );
     	$response = $this->requestProvider->request( 'order_create', $params, 'post' );
 
@@ -153,6 +152,10 @@ class DDeliverySDK {
      * @param float $declaredPrice Оценочная стоимость (руб)
      * @param float $paymentPrice Наложенный платеж (руб)
      * @param $shop_refnum id заказа cms
+     * @param $to_email email  заказа
+     * @param $metadata метадвнные заказа
+     *
+     *
      *
      * @throws \DDelivery\DDeliveryException
      *
@@ -160,7 +163,7 @@ class DDeliverySDK {
      */
     public function addSelfOrder( $delivery_point, $dimensionSide1, $dimensionSide2, $dimensionSide3,
                                   $confirmed = true, $weight, $to_name, $to_phone, $goods_description,
-    		                      $declaredPrice, $paymentPrice, $shop_refnum )
+    		                      $declaredPrice, $paymentPrice, $shop_refnum, $to_email = '', $metadata )
     {   
     	$params = array(
     			'type' => self::TYPE_SELF,
@@ -175,7 +178,9 @@ class DDeliverySDK {
     			'goods_description' => $goods_description,
     			'declared_price' => $declaredPrice,
     			'payment_price' => $paymentPrice,
-    			'shop_refnum' => $shop_refnum
+    			'shop_refnum' => $shop_refnum,
+                'to_email' => $to_email,
+                 'metadata' => $metadata
     	);
         
         $response = $this->requestProvider->request( 'order_create', $params,'post' );
@@ -385,26 +390,6 @@ class DDeliverySDK {
     {
         $result = $this->requestProvider->request('order_status');
         return $result->errorMessage != 'Shop not found!';
-    }
-
-    /**
-     * Возвращает id городов с болшим кол-вом людей, может когда-нибудь будет на сервере
-     * @return array
-     */
-    public function getTopCityId()
-    {
-        return array(
-            151184, // 'Москва',
-            151185, // 'Санкт-Петербург',
-            293, // 'Новосибирск',
-            375, // 'Екатеринбург',
-            282, // 'Нижний Новгород',
-            54, //'Казань',
-            345, // 'Самара',
-            296, //'Омск',
-            434, // 'Челябинск',
-            331, // 'Ростов-на-Дону',
-        );
     }
 
 

@@ -264,8 +264,7 @@ class DDeliveryEvents
         );
 
 
-
-        $companyList = $APPLICATION->ConvertCharsetArray(self::companyList(), 'cp1251', SITE_CHARSET);
+        $companyList = self::companyList();
 
         foreach($companyList as $key => $company){
             $arConfig['CONFIG']["COMPANY_".$key] = array(

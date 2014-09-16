@@ -483,7 +483,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * Верните id города в системе DDelivery
      * @return int
      */
-    public function getClientCityId()
+    public function getClientCity()
     {
         $return = false;
         foreach($this->getOrderProps() as $prop){
@@ -495,11 +495,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         if($return) {
             $cityRes = $this->ddeliveryUI->sdk->getAutoCompleteCity($return[0]);
             if($cityRes && !empty($cityRes->response)) {
-                return $cityRes->response[0]['_id'];
+                return $cityRes->response[0];
             }
         }
         // Если нет информации о городе, оставьте вызов родительского метода.
-        return parent::getClientCityId();
+        return parent::getClientCity();
     }
 
     /**

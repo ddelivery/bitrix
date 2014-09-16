@@ -331,9 +331,10 @@ abstract class DShopAdapter
             0.5,	//	float $weight вес кг
             1000,	//	float $price стоимостьв рублях
             1,	//	int $quantity количество товара
+            'articule 222',
             'Веселый клоун'	//	string $name Название вещи
         );
-        $products[] = new DDeliveryProduct(2, 10, 13, 15, 0.3, 1500, 2, 'Грустный клоун');
+        $products[] = new DDeliveryProduct(2, 10, 13, 15, 0.3, 1500, 2, 'articule 222', 'Грустный клоун');
         return $products;
     }
     /**
@@ -344,9 +345,6 @@ abstract class DShopAdapter
     {
         if(!$this->productsFromCart) {
             $this->productsFromCart = $this->_getProductsFromCart();
-            if( count( $this->productsFromCart ) < 1 ){
-                $this->productsFromCart = $this->getDemoCardData();
-            }
         }
         return $this->productsFromCart;
     }
@@ -498,14 +496,14 @@ abstract class DShopAdapter
     }
 
     /**
-     * Верните id города в системе DDelivery
-     * @return int
+     * Верните объект города в системе DDelivery
+     * @return array|false
      */
-    public function getClientCityId() {
-        if(isset($_COOKIE['ddCityId'])){
+    public function getClientCity() {
+        /*if(isset($_COOKIE['ddCityId'])){
             return $_COOKIE['ddCityId'];
-        }
-        return 0;
+        }*/
+        return false;
     }
 
 
@@ -578,7 +576,7 @@ abstract class DShopAdapter
      * @param DDeliveryOrder $order
      * @return bool
      */
-    abstract public function onFinishChange(  $order);
+    abstract public function onFinishChange( $order );
 
     /**
      * Обработка цены перед отдачей в методе getClientPrice

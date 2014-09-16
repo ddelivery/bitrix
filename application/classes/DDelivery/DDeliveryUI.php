@@ -586,8 +586,7 @@ use DDelivery\Sdk\Messager;
 
             $ddeliveryOrderID = 0;
 
-            if( $this->shop->sendOrderToDDeliveryServer($order) )
-            {
+            if( $this->shop->sendOrderToDDeliveryServer($order) ){
                 $point = $order->getPoint();
                 $to_city = $order->city;
                 $delivery_company = $order->companyId;
@@ -612,11 +611,14 @@ use DDelivery\Sdk\Messager;
                 $to_house = $order->toHouse;
                 $to_flat = $order->toFlat;
                 $shop_refnum = $order->shopRefnum;
+                $to_email = $order->toEmail;
+                $metadata = $order->getJsonOrder();
+
 
                 $response = $this->sdk->addCourierOrder( $to_city, $delivery_company, $dimensionSide1, $dimensionSide2,
                                                              $dimensionSide3, $shop_refnum, $confirmed, $weight,
                                                              $to_name, $to_phone, $goods_description, $declaredPrice,
-                                                             $paymentPrice, $to_street, $to_house, $to_flat );
+                                                             $paymentPrice, $to_street, $to_house, $to_flat, $to_email, $metadata );
                 if( !$response->response['order'] ){
                     throw new DDeliveryException("Ошибка отправки заказа на сервер DDelivery.ru");
                 }
@@ -666,10 +668,13 @@ use DDelivery\Sdk\Messager;
                 $paymentPrice = $this->shop->getPaymentPriceSelf( $order, $this->getClientPrice($point, $order ) );
                 $shop_refnum = $order->shopRefnum;
 
+                $to_email = $order->toEmail;
+                $metadata = $order->getJsonOrder();
+
                 $response = $this->sdk->addSelfOrder( $pointID, $dimensionSide1, $dimensionSide2,
                                                       $dimensionSide3, $confirmed, $weight, $to_name,
                                                       $to_phone, $goods_description, $declaredPrice,
-                                                      $paymentPrice, $shop_refnum );
+                                                      $paymentPrice, $shop_refnum, $to_email, $metadata );
 
                 if( !$response->response['order'] ){
                     throw new DDeliveryException("Ошибка отправки заказа на сервер DDelivery.ru");
@@ -798,27 +803,25 @@ use DDelivery\Sdk\Messager;
 
         /**
          * Возвращает id текущего города или пытается определить его
-         * @return int
+         * @return array [_id, name]
          */
-        protected function getCityId()
+        protected function getCity()
         {
-            if($this->order->city) {
-                return $this->order->city;
-            }
+            $city = $this->shop->getClientCity();
 
-            $cityId = (int)$this->shop->getClientCityId();
-
-            if(!$cityId){
+            if(!$city){
                 $cityRaw = $this->getCityByIp($_SERVER['REMOTE_ADDR']);
                 if($cityRaw && $cityRaw['city_id']) {
-                    $cityId = (int)$cityRaw['city_id'];
+                    $cityRaw['_id'] =  (int)$cityRaw['city_id'];
+                    $city = $cityRaw;
                 }
-                if(!$cityId) {
-                    $topCityId = $this->sdk->getTopCityId();
-                    $cityId = reset($topCityId); // Самый большой город
+                if(!$city) {
+                    $cityDB = new City($this->pdo, $this->pdoTablePrefix);
+                    $cityList = $cityDB->getTopCityList();
+                    $city = reset($cityList); // Самый большой город
                 }
             }
-            return $cityId;
+            return $city;
         }
 
         /**
@@ -1286,7 +1289,10 @@ use DDelivery\Sdk\Messager;
             }
 
             if(!$this->order->city ) {
-                $this->order->city = $this->getCityId();
+                $city = $this->getCity();
+                $city = $this->getCityNameByDisplay($city);
+                $this->order->city = $city['_id'];
+                $this->order->cityName = $city['display_name'];
             }
 
             if(!empty($request['point']) && isset($request['type'])) {
@@ -1468,16 +1474,8 @@ use DDelivery\Sdk\Messager;
             }
             $avalibleCities = array();
             foreach($cityList as &$cityData){
-                // Костыль, на сервере города начинаются с маленькой буквы
-                $cityData['name'] = Utils::firstWordLiterUppercase($cityData['name']);
 
-                //Собирает строчку с названием города для отображения
-                $displayCityName = $cityData['type'].'. '.$cityData['name'];
-                if($cityData['region'] != $cityData['name']) {
-                    $displayCityName .= ', '.$cityData['region'].' обл.';
-                }
-
-                $cityData['display_name'] = $displayCityName;
+                $cityData = $this->getCityNameByDisplay($cityData);
                 $avalibleCities[] = $cityData['_id'];
             }
             if( !in_array($cityId, $avalibleCities) ){
@@ -1486,6 +1484,21 @@ use DDelivery\Sdk\Messager;
             }
 
             return $cityList;
+        }
+
+        protected function getCityNameByDisplay($cityData)
+        {
+            // Костыль, на сервере города начинаются с маленькой буквы
+            $cityData['name'] = Utils::firstWordLiterUppercase($cityData['name']);
+
+            //Собирает строчку с названием города для отображения
+            $displayCityName = $cityData['type'].'. '.$cityData['name'];
+            if($cityData['region'] != $cityData['name']) {
+                $displayCityName .= ', '.$cityData['region'].' обл.';
+            }
+
+            $cityData['display_name'] = $displayCityName;
+            return $cityData;
         }
 
 
