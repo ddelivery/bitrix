@@ -301,6 +301,41 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         return $result;
     }
 
+
+    /**
+     * Сумма к оплате на точке или курьеру
+     *
+     * @param \DDelivery\Order\DDeliveryOrder $order
+     * @param float $orderPrice
+     *
+     * @return float
+     */
+    public function getPaymentPriceSelf( $order, $orderPrice )
+    {
+        $bxOrder = CSaleOrder::GetByID($order->shopRefnum);
+        if($bxOrder['PAYED'] == 'Y') {
+            return 0;
+        }
+        return $order->amount + $orderPrice;
+    }
+
+    /**
+     * Сумма к оплате на точке или курьеру
+     *
+     * @param \DDelivery\Order\DDeliveryOrder $order
+     * @param float $orderPrice
+     *
+     * @return float
+     */
+    public function getPaymentPriceCourier( $order, $orderPrice )
+    {
+        $bxOrder = CSaleOrder::GetByID($order->shopRefnum);
+        if($bxOrder['PAYED'] == 'Y') {
+            return 0;
+        }
+        return $order->amount + $orderPrice;
+    }
+
     /**
      * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Курьер
      * @return int
