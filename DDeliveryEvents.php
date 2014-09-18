@@ -448,24 +448,36 @@ class DDeliveryEvents
     /* Калькуляция стоимости доставки*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
+        $itemList = array();
+        if(!empty($arOrder)
+            && !empty($arOrder['ITEMS'][0]['PRODUCT_ID'])
+            && !empty($arOrder['ITEMS'][0]['QUANTITY'])
+            && !empty($arOrder['ITEMS'][0]['PRICE'])
+            && !empty($arOrder['ITEMS'][0]['NAME'])
+            ){
+            $itemList = $arOrder['ITEMS'];
+        }
 
-        if(substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
+        if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
             return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
         }
-
-        if(substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
+        if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
             $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
             $dbPropsValue = CSaleOrderPropsValue::GetList(
                 array(),
                 array("ORDER_ID" => $cmsOrderId, 'CODE'=>'DDELIVERY_ID')
             );
+
             if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
                 return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
             }
+
             $ddOrderId = $arValue['VALUE'];
-            $order = CSaleOrder::GetByID($cmsOrderId);
-            $userId = $order['USER_ID'];
+            $dbBasketItems = CSaleBasket::GetList(Array("ID"=>"ASC"), Array("ORDER_ID"=>$cmsOrderId));
+            while($arBasket = $dbBasketItems->Fetch()) {
+                $itemList[] = $arBasket;
+            }
         } else {
             $userId = CSaleBasket::GetBasketUserID();
             $cmsOrderId = "NULL";
@@ -476,41 +488,41 @@ class DDeliveryEvents
 
         if(!empty($ddOrderId))
         {
-            // TODO Удалить когда починят
-            $dbBasketItems = CSaleBasket::GetList(
-                array("ID" => "ASC"),
-                array(
-                    "FUSER_ID" => $userId,
-                    "ORDER_ID" => $cmsOrderId
-                ),
-                false,
-                false,
-                array('PRODUCT_ID', 'PRICE', 'QUANTITY', 'NAME')
-            );
-            $itemList = array();
-            while($arBasket = $dbBasketItems->Fetch()) {
-                $itemList[] = $arBasket;
+            if(!empty($itemList)){
+                // TODO Удалить когда починят
+                $dbBasketItems = CSaleBasket::GetList(
+                    array("ID" => "ASC"),
+                    array(
+                        "FUSER_ID" => $userId,
+                        "ORDER_ID" => $cmsOrderId
+                    ),
+                    false,
+                    false,
+                    array('PRODUCT_ID', 'PRICE', 'QUANTITY', 'NAME')
+                );
+                while($arBasket = $dbBasketItems->Fetch()) {
+                    $itemList[] = $arBasket;
+                }
+                //END TODO
             }
             if(empty($itemList)){
                 return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_BASKET_EMPTY'));
             }
-            //END TODO
-
 
             $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
             $IntegratorShop->useTaxRate = false;
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
             $order = $ddeliveryUI->initOrder($ddOrderId);
-
+            $order->getProductParams();
+            $ddeliveryUI->saveFullOrder($order);
 
             if(!empty($order)){
-                $price = $ddeliveryUI->getClientPrice($order->getPoint(), $order);
+                $price = $ddeliveryUI->getClientPrice($order->getPoint(), $order) ;
                 return array("RESULT" => "OK", 'VALUE'=>(float)$price);
             }else{
                 return array( "RESULT" => "ERROR", 'ERROR' => 'Not Find order');
             }
         }
-
         return array(
             "RESULT" => "ERROR",
             "ERROR" => GetMessage('DDELIVERY_EMPTY_POINT')

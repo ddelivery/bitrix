@@ -190,7 +190,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
                 $size['WEIGHT']/100,	//	float $weight вес кг
                 $item['PRICE'],	//	float $price стоимостьв рублях
                 $item['QUANTITY'],	//	int $quantity количество товара
-                $this->toUtf8($item['NAME'])	//	string $name Название вещи
+                $this->toUtf8($item['NAME']),	//	string $name Название вещи
+                '-' // @todo
             );
         }
         return $productsDD;
