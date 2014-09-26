@@ -132,6 +132,7 @@ class DDeliverySDK {
     	if( !count ( $response->response ))
     	{
             $errorMsg = (is_array($response->errorMessage))?implode(', ', $response->errorMessage):$response->errorMessage;
+            return array();
             throw new DDeliveryException( $errorMsg );
     	}
     	return $response;
@@ -154,8 +155,6 @@ class DDeliverySDK {
      * @param $shop_refnum id заказа cms
      * @param $to_email email  заказа
      * @param $metadata метадвнные заказа
-     *
-     *
      *
      * @throws \DDelivery\DDeliveryException
      *
@@ -201,8 +200,7 @@ class DDeliverySDK {
      * @throws \DDelivery\DDeliveryException
      * @return DDeliverySDKResponse
      */
-    public function getSelfDeliveryPoints( $companies, $cities  )
-    {
+    public function getSelfDeliveryPoints( $companies, $cities  ){
     	$params = array(
     			'_action' => 'delivery_points',
     			'cities' => $cities,
@@ -224,8 +222,7 @@ class DDeliverySDK {
      * @throws \DDelivery\DDeliveryException
      * @return DDeliverySDKResponse
      */
-    public function getCityByIp( $ip )
-    {	
+    public function getCityByIp( $ip ){
     	$params = array(
             '_action' => 'geoip',
             'ip' => $ip
@@ -357,6 +354,18 @@ class DDeliverySDK {
         return $response;
     }
 
+    public function getCityById( $id ){
+        $params = array(
+            '_action' => 'city',
+            '_id' => $id
+        );
+        $response = $this->requestProvider->request('city', $params, 'get', $this->server . 'node') ;
+        if( !$response->success ){
+            $errorMsg = (is_array($response->errorMessage))?implode(', ', $response->errorMessage):$response->errorMessage;
+            throw new DDeliveryException( $errorMsg );
+        }
+        return $response;
+    }
 
     /**
      * Получить автокомплит для города
@@ -374,8 +383,7 @@ class DDeliverySDK {
     	);
     	$response = $this->requestProvider->request('autocomplete', $params,
     											    'get', $this->server . 'node') ;
-    	if( !$response->success )
-        {
+    	if( !$response->success ){
             $errorMsg = (is_array($response->errorMessage))?implode(', ', $response->errorMessage):$response->errorMessage;
             throw new DDeliveryException( $errorMsg );
         }
@@ -386,10 +394,28 @@ class DDeliverySDK {
      * Возвращает true если ключ валиден
      * @return bool
      */
-    function checkApiKey()
-    {
+    function checkApiKey(){
         $result = $this->requestProvider->request('order_status');
         return $result->errorMessage != 'Shop not found!';
+    }
+
+    /**
+     * Возвращает id городов с болшим кол-вом людей, может когда-нибудь будет на сервере
+     * @return array
+     */
+    public function getTopCityId(){
+        return array(
+            151184, // 'Москва',
+            151185, // 'Санкт-Петербург',
+            293, // 'Новосибирск',
+            375, // 'Екатеринбург',
+            282, // 'Нижний Новгород',
+            54, //'Казань',
+            345, // 'Самара',
+            296, //'Омск',
+            434, // 'Челябинск',
+            331, // 'Ростов-на-Дону',
+        );
     }
 
 

@@ -53,17 +53,15 @@ class RequestProvider
 	 * @var string
 	 */
 	private $serverUrl = array( self::SERVER_STAGE => 'http://stage.ddelivery.ru/api/v1/',
-        self::SERVER_CABINET => 'http://cabinet.ddelivery.ru/api/v1/',
-        self::SERVER_STAGENODE => 'http://stage.ddelivery.ru/daemon/daemon.js',
-        self::SERVER_CABINETNODE => 'http://cabinet.ddelivery.ru/daemon/daemon.js'
+                                self::SERVER_CABINET => 'http://cabinet.ddelivery.ru/api/v1/',
+                                self::SERVER_STAGENODE => 'http://stage.ddelivery.ru/daemon/daemon.js',
+                                self::SERVER_CABINETNODE => 'http://cabinet.ddelivery.ru/daemon/daemon.js'
 	                           );
 	/**
 	 * Количество проделанных запросов на сервер ddelivery
 	 * @var int
 	 */
 	public $countRequests = 0;
-
-    public $lastUrl = null;
 	
 	/**
 	 * @param string $apiKey ключ полученный для магазина
@@ -103,8 +101,7 @@ class RequestProvider
      * @return DDeliverySDKResponse
      */
 	public function request($action, $params = array(), 
-	                        $method = 'get', $server = '')
-	{
+	                        $method = 'get', $server = ''){
 		
 		$this->countRequests++;
 		
@@ -119,8 +116,7 @@ class RequestProvider
 
 
 	    $response = new DDeliverySDKResponse( $result, $this->curl[$server] );
-        //print_r($this->lastUrl."\n");
-	    
+
 	    if(!$this->keepActive)
 	    {
 	    	curl_close($this->curl[$server]);
@@ -136,7 +132,7 @@ class RequestProvider
      *
      * @param string $server
      * @param string[] $params
-     * @return string
+     * @return DDeliverySDKResponse
      */
 	private function _setRequest( $server, $params )
 	{
@@ -190,7 +186,6 @@ class RequestProvider
 			curl_setopt($this->curl[$server], CURLOPT_POST, true);
 			curl_setopt($this->curl[$server], CURLOPT_POSTFIELDS, $urlSuffix);
 		}
-        $this->lastUrl = $url;
 	}
     
 }

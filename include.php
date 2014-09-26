@@ -17,6 +17,7 @@ function ddeliveryFromCp1251($str) {
     'ddelivery.ddelivery',
     array(
         'DDeliveryShop' => 'DDeliveryShop.php',
+        'DDeliveryShopEx' => 'DDeliveryShopEx.php',
         'DDeliveryEvents' => 'DDeliveryEvents.php',
     )
 );

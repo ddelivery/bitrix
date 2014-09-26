@@ -30,23 +30,11 @@ while($arBasket = $dbBasketItems->Fetch()) {
     $itemList[] = $arBasket;
 }
 
-
-$db_props = CSaleOrderProps::GetList(
-    array("SORT" => "ASC"),
-    array(
-        "CODE" => 'DDELIVERY_ID',
-        "ACTIVE" => 'Y',
-    )
-);
-
-$props = $db_props->Fetch();
-foreach($_REQUEST['formData'] as $key => $value) {
-
+if(class_exists('DDeliveryShopEx', true)){
+    $IntegratorShop = new DDeliveryShopEx($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
+}else{
+    $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
 }
-
-
-
-$IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
 try{
     $ddeliveryUI = new DDeliveryUI($IntegratorShop);
     $IntegratorShop->setDDeliveryUI($ddeliveryUI);

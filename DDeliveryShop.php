@@ -197,6 +197,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         return $productsDD;
     }
 
+    public function getDemoCardData()
+    {
+        return array();
+    }
+
     /**
      * Меняет статус внутреннего заказа cms
      *
@@ -340,7 +345,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Курьер
      * @return int
      */
-    public function filterPointByPaymentTypeCourier()
+    public function filterPointByPaymentTypeCourier( $order )
     {
         return self::PAYMENT_POST_PAYMENT;
         // выбираем один из 3 вариантов(см документацию или комменты к констатам)
@@ -354,7 +359,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Самовывоз
      * @return int
      */
-    public function filterPointByPaymentTypeSelf()
+    public function filterPointByPaymentTypeSelf( $order )
     {
         return self::PAYMENT_POST_PAYMENT;
         // выбираем один из 3 вариантов(см документацию или комменты к констатам)
@@ -519,7 +524,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * Верните id города в системе DDelivery
      * @return int
      */
-    public function getClientCity()
+    public function getClientCityId()
     {
         $return = false;
         foreach($this->getOrderProps() as $prop){
@@ -531,11 +536,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         if($return) {
             $cityRes = $this->ddeliveryUI->sdk->getAutoCompleteCity($return[0]);
             if($cityRes && !empty($cityRes->response)) {
-                return $cityRes->response[0];
+                return $cityRes->response[0]['_id'];
             }
         }
         // Если нет информации о городе, оставьте вызов родительского метода.
-        return parent::getClientCity();
+        return parent::getClientCityId();
     }
 
     /**
