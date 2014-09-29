@@ -39,7 +39,7 @@ class DDeliveryEvents
             "DESCRIPTION_INNER" => GetMessage('DDELIVERY_DESCRIPTION_INNER'),
             "BASE_CURRENCY" => "RUB",//COption::GetOptionString("sale", "default_currency", "RUB"),
 
-            "HANDLER" => __FILE__,
+            "HANDLER" => '/bitrix/modules/ddelivery.ddelivery/DDeliveryEvents.php',
 
             /* Handler methods */
             "DBGETSETTINGS" => array(__CLASS__, "GetSettings"),
@@ -49,7 +49,7 @@ class DDeliveryEvents
             "COMPABILITY" => array(__CLASS__, "Compability"),
             "CALCULATOR" => array(__CLASS__, "Calculate"),
 
-            /* Список профилей */
+            /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
             "PROFILES" => array(
                 "all" => array(
                     "TITLE" => 'ddelivery.ru',
@@ -60,7 +60,7 @@ class DDeliveryEvents
             )
         );
     }
-    /* Запрос конфигурации службы доставки */
+    /* пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ */
     function GetConfig()
     {
         global $APPLICATION;
@@ -172,7 +172,7 @@ class DDeliveryEvents
             )
         );
 
-        // Перебираем инфоблоки
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
         $cCatalog = new CCatalog();
         $res = $cCatalog->GetList();
         while($catalog = $res->Fetch() ) {
@@ -207,7 +207,7 @@ class DDeliveryEvents
         }
 
 
-        // Дополняем настройки дальше
+        // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
         $arConfig['CONFIG'] +=  array(
             "SECTION_DEFAULT" => array(
                 'TYPE'=>'SECTION',
@@ -244,7 +244,7 @@ class DDeliveryEvents
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
-            // Способы доставки
+            // пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
             'COMPANY_TITLE' => array (
                 'TYPE' => 'SECTION',
                 'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE'),
@@ -411,7 +411,7 @@ class DDeliveryEvents
                 }
             }
 
-            /*/ Добавляет свойство товару и делает его привязаным к DD
+            /*/ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ DD
             $id = CSaleOrderProps::add(array (
                 'PERSON_TYPE_ID' => '1',
                 'NAME' => 'DDelivery ID',
@@ -445,7 +445,7 @@ class DDeliveryEvents
         return $string;
     }
 
-    /* Калькуляция стоимости доставки*/
+    /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ*/
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
         $itemList = array();
@@ -460,7 +460,7 @@ class DDeliveryEvents
 
         if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
-            return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
+            return array( "RESULT" => "ERROR", 'ERROR' => 'пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
         }
         if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
             $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
@@ -470,7 +470,7 @@ class DDeliveryEvents
             );
 
             if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
-                return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду считать стоимость доставки в админке');
+                return array( "RESULT" => "ERROR", 'ERROR' => 'пїЅ пїЅпїЅ пїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ');
             }
 
             $ddOrderId = $arValue['VALUE'];
@@ -489,7 +489,7 @@ class DDeliveryEvents
         if(!empty($ddOrderId))
         {
             if(!empty($itemList)){
-                // TODO Удалить когда починят
+                // TODO пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
                 $dbBasketItems = CSaleBasket::GetList(
                     array("ID" => "ASC"),
                     array(
@@ -529,7 +529,7 @@ class DDeliveryEvents
         );
     }
 
-    /* Проверка соответствия профиля доставки заказу */
+    /* пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ */
     function Compability($arOrder, $arConfig)
     {
         return array("all");
@@ -545,7 +545,7 @@ class DDeliveryEvents
     }
 
     /**
-     * Событие происходит когда оформлен заказ. Мы дописываем заказу sqlite ID
+     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ. пїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ sqlite ID
      * @param $iOrderID
      * @param $eventName
      * @param $arFieldsUpdate
@@ -585,7 +585,7 @@ class DDeliveryEvents
     }
 
     /**
-     * Событие происходит когда изеняется статус заказа
+     * пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅ
      * @param $orderId
      * @param $statusID
      * @throws Bitrix\Main\DB\Exception

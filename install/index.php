@@ -60,7 +60,7 @@ Class ddelivery_ddelivery extends CModule
                 }
             }
         }
-        if(!class_exists('PDO')){
+        if(!class_exists('PDO') || !in_array('mysql', PDO::getAvailableDrivers())){
             $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_PDO'));
         }elseif (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
             RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
