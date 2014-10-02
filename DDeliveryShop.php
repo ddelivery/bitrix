@@ -49,13 +49,24 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function getDbConfig()
     {
-        $configurations = Configuration::getInstance()->get('connections');
-        $mysql = $configurations['default'];
+        global $DB;
+        $pdo = false;
+        if(defined('BX_UTF') && BX_UTF) {
+            if (is_resource($DB->db_Conn) && get_resource_type($DB->db_Conn) == 'mysql link') {
+                $pdo = new DDelivery\DB\Mysql\Connect($DB->db_Conn);
+            }
+            // @TODO проверить на mysqi
+        }
+        // CP1251 new connect
+        if(!$pdo){
+            $conn = mysql_connect($DB->DBHost, $DB->DBLogin, $DB->DBPassword, true);
+            mysql_select_db($DB->DBName, $conn);
+            mysql_query('SET NAMES utf8', $conn);
+            $pdo = new DDelivery\DB\Mysql\Connect($conn);
+        }
+
         return array(
-            'type' => self::DB_MYSQL,
-            'dsn' => 'mysql:host='.$mysql['host'].';dbname='.$mysql['database'],
-            'user' => $mysql['login'],
-            'pass' => $mysql['password'],
+            'pdo' => $pdo,
             'prefix' => 'ddelivery_',
         );
     }
@@ -184,10 +195,10 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
             $productsDD[] = new DDeliveryProduct(
                 $item['PRODUCT_ID'],	//	int $id id товара в системе и-нет магазина
-                $size['WIDTH']/10,	//	float $width длинна
-                $size['HEIGHT']/10,	//	float $height высота
-                $size['LENGTH']/10,	//	float $length ширина
-                $size['WEIGHT']/100,	//	float $weight вес кг
+                $size['WIDTH']/100,	//	float $width длинна см
+                $size['HEIGHT']/100,	//	float $height высота см
+                $size['LENGTH']/100,	//	float $length ширина см
+                $size['WEIGHT']/1000,	//	float $weight вес кг
                 $item['PRICE'],	//	float $price стоимостьв рублях
                 $item['QUANTITY'],	//	int $quantity количество товара
                 $this->toUtf8($item['NAME']),	//	string $name Название вещи
@@ -282,8 +293,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         $result = array();
         foreach($this->config as $name => $data) {
-            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'Y'){
-                $result[] = (int)substr($name, 8);
+            if(substr($name, 0, 9) == 'COMPANY_'.\DDelivery\Sdk\DDeliverySDK::TYPE_COURIER && $data['VALUE'] == 'Y'){
+                $result[] = (int)substr($name, 10);
             }
         }
 
@@ -299,8 +310,8 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         $result = array();
         foreach($this->config as $name => $data) {
-            if(substr($name, 0, 8) == 'COMPANY_' && $data['VALUE'] == 'Y'){
-                $result[] = (int)substr($name, 8);
+            if(substr($name, 0, 9) == 'COMPANY_'.\DDelivery\Sdk\DDeliverySDK::TYPE_SELF && $data['VALUE'] == 'Y'){
+                $result[] = (int)substr($name, 10);
             }
         }
         return $result;

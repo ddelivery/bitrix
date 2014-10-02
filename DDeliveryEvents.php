@@ -6,8 +6,7 @@
  */
 
 use DDelivery\DDeliveryUI;
-use DDelivery\Point\DDeliveryPointCourier;
-use DDelivery\Point\DDeliveryPointSelf;
+use DDelivery\Sdk\DDeliverySDK;
 
 include_once(__DIR__.'/application/bootstrap.php');
 
@@ -263,17 +262,34 @@ class DDeliveryEvents
             ),
         );
 
-
         $companyList = self::companyList();
-
-        foreach($companyList as $key => $company){
-            $arConfig['CONFIG']["COMPANY_".$key] = array(
+        $arConfig['CONFIG']['COMPANY_TITLE_COURIER'] = array(
+            'TYPE' => 'SECTION',
+            'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE_COURIER'),
+            'GROUP' => 'type',
+        );
+        foreach ($companyList[DDeliverySDK::TYPE_COURIER] as $key => $company) {
+            $arConfig['CONFIG']["COMPANY_". DDeliverySDK::TYPE_COURIER . '_' . $key] = array(
                 "TYPE" => "CHECKBOX",
                 "DEFAULT" => 'Y',
                 "TITLE" => $company,
                 "GROUP" => "type",
             );
         }
+        $arConfig['CONFIG']['COMPANY_TITLE_SELF'] = array(
+            'TYPE' => 'SECTION',
+            'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE_SELF'),
+            'GROUP' => 'type',
+        );
+        foreach ($companyList[DDeliverySDK::TYPE_SELF] as $key => $company) {
+            $arConfig['CONFIG']["COMPANY_". DDeliverySDK::TYPE_SELF . '_' . $key] = array(
+                "TYPE" => "CHECKBOX",
+                "DEFAULT" => 'Y',
+                "TITLE" => $company,
+                "GROUP" => "type",
+            );
+        }
+
 
 
 
@@ -383,12 +399,22 @@ class DDeliveryEvents
     static public function companyList()
     {
         $companyList = DDeliveryUI::getCompanySubInfo();
-        $result = array();
+        $companyNameList = array();
         global $APPLICATION;
         foreach($companyList as $id => $company) {
-            $result[$id] = $APPLICATION->ConvertCharsetArray($company['name'], 'utf-8', SITE_CHARSET);
+            $companyNameList[$id] = $APPLICATION->ConvertCharsetArray($company['name'], 'utf-8', SITE_CHARSET);
         }
-
+        $courier = array(45, 29, 23, 27, 28, 20, 35, 36, 30, 31, 22, 43, 17, 48, 46, 14, 41, 13,44, 40, 26, 24);
+        $result = array(DDeliverySDK::TYPE_SELF => array(), DDeliverySDK::TYPE_COURIER => array());
+        foreach($courier as $companyId) {
+            if(isset($companyNameList[$companyId]))
+                $result[DDeliverySDK::TYPE_COURIER][] = $companyNameList[$companyId];
+        }
+        $self = array(4, 21, 11, 16, 42, 17, 37, 3, 1, 7, 39, 47, 41, 38, 40, 25);
+        foreach($self as $companyId) {
+            if(isset($companyNameList[$companyId]))
+                $result[DDeliverySDK::TYPE_SELF][] = $companyNameList[$companyId];
+        }
         return $result;
     }
 
@@ -460,7 +486,7 @@ class DDeliveryEvents
 
         if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
-            return array( "RESULT" => "ERROR", 'ERROR' => '� �� ���� ������� ��������� �������� � �������');
+            return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду работать в админке');
         }
         if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
             $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
@@ -470,7 +496,7 @@ class DDeliveryEvents
             );
 
             if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
-                return array( "RESULT" => "ERROR", 'ERROR' => '� �� ���� ������� ��������� �������� � �������');
+                return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду работать в админке');
             }
 
             $ddOrderId = $arValue['VALUE'];
@@ -489,7 +515,7 @@ class DDeliveryEvents
         if(!empty($ddOrderId))
         {
             if(!empty($itemList)){
-                // TODO ������� ����� �������
+                // TODO
                 $dbBasketItems = CSaleBasket::GetList(
                     array("ID" => "ASC"),
                     array(

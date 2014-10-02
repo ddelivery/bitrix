@@ -6,16 +6,12 @@
 * @author  mrozk
 */
 namespace DDelivery;
+use DDelivery\DB\ConnectInterface;
 use DDelivery\Order\DDStatusProvider;
 use DDelivery\Adapter\DShopAdapter;
-use DDelivery\DataBase\City;
-use DDelivery\DataBase\Order;
-use DDelivery\DataBase\SQLite;
 use DDelivery\Sdk\DCache;
 use DDelivery\Sdk\DDeliverySDK;
 use DDelivery\Order\DDeliveryOrder;
-use DDelivery\Adapter\DShopAdapterImpl;
-use DDelivery\Sdk\Messager;
 
 
 /**
@@ -55,6 +51,9 @@ use DDelivery\Sdk\Messager;
          */
         private $order;
 
+        /**
+         * @var DCityLocator
+         */
         public $cityLocator;
 
         /**
@@ -65,7 +64,7 @@ use DDelivery\Sdk\Messager;
         private $cache;
 
         /**
-         * @var /PDO бд
+         * @var ConnectInterface бд
          */
         private $pdo;
         /**
@@ -197,7 +196,7 @@ use DDelivery\Sdk\Messager;
                     if($order->type == DDeliverySDK::TYPE_SELF){
                         return $this->createSelfOrder($order);
                     }elseif( $order->type == DDeliverySDK::TYPE_COURIER ){
-                            return $this->createCourierOrder($order);
+                        return $this->createCourierOrder($order);
                     }
                 }
             }
@@ -350,7 +349,6 @@ use DDelivery\Sdk\Messager;
                 $this->_initOrderInfo( $currentOrder, $item );
             }else{
                 throw new DDeliveryException('Заказ DD в локальной БД не найден');
-                return;
             }
 
             return $currentOrder;
@@ -538,8 +536,6 @@ use DDelivery\Sdk\Messager;
          * @return int
          */
         public function createCourierOrder( $order ){
-            /** @var DDeliveryPointCourier $point */
-
             if(! $this->shop->sendOrderToDDeliveryServer($order) ){
                 return 0;
             } else {
@@ -845,7 +841,6 @@ use DDelivery\Sdk\Messager;
                 return $resultCompanies;
             }else{
                 throw new DDeliveryException('Недостаточно параметров для расчета цены');
-                return false;
             }
         }
 
@@ -1829,7 +1824,7 @@ use DDelivery\Sdk\Messager;
         public function _initDb(DShopAdapter $dShopAdapter)
         {
             $dbConfig = $dShopAdapter->getDbConfig();
-            if (isset($dbConfig['pdo']) && $dbConfig['pdo'] instanceof \PDO) {
+            if (isset($dbConfig['pdo']) && ($dbConfig['pdo'] instanceof \PDO || $dbConfig['pdo'] instanceof ConnectInterface)) {
                 $this->pdo = $dbConfig['pdo'];
             } elseif ($dbConfig['type'] == DShopAdapter::DB_SQLITE) {
                 if (!$dbConfig['dbPath'])
