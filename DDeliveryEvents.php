@@ -48,7 +48,6 @@ class DDeliveryEvents
             "COMPABILITY" => array(__CLASS__, "Compability"),
             "CALCULATOR" => array(__CLASS__, "Calculate"),
 
-            /* ������ �������� */
             "PROFILES" => array(
                 "all" => array(
                     "TITLE" => 'ddelivery.ru',
@@ -59,7 +58,7 @@ class DDeliveryEvents
             )
         );
     }
-    /* ������ ������������ ������ �������� */
+    /* Настройки */
     function GetConfig()
     {
         global $APPLICATION;
@@ -171,7 +170,7 @@ class DDeliveryEvents
             )
         );
 
-        // ���������� ���������
+        // Создаем вкладки для инфоблоков
         $cCatalog = new CCatalog();
         $res = $cCatalog->GetList();
         while($catalog = $res->Fetch() ) {
@@ -206,7 +205,6 @@ class DDeliveryEvents
         }
 
 
-        // ��������� ��������� ������
         $arConfig['CONFIG'] +=  array(
             "SECTION_DEFAULT" => array(
                 'TYPE'=>'SECTION',
@@ -243,7 +241,7 @@ class DDeliveryEvents
                 "GROUP" => "general",
                 'CHECK_FORMAT' => 'NUMBER',
             ),
-            // ������� ��������
+            // Таб службы доставки
             'COMPANY_TITLE' => array (
                 'TYPE' => 'SECTION',
                 'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE'),
@@ -268,6 +266,7 @@ class DDeliveryEvents
             'TITLE' => GetMessage('DDELIVERY_CONFIG_COMPANY_TITLE_COURIER'),
             'GROUP' => 'type',
         );
+
         foreach ($companyList[DDeliverySDK::TYPE_COURIER] as $key => $company) {
             $arConfig['CONFIG']["COMPANY_". DDeliverySDK::TYPE_COURIER . '_' . $key] = array(
                 "TYPE" => "CHECKBOX",
@@ -408,12 +407,12 @@ class DDeliveryEvents
         $result = array(DDeliverySDK::TYPE_SELF => array(), DDeliverySDK::TYPE_COURIER => array());
         foreach($courier as $companyId) {
             if(isset($companyNameList[$companyId]))
-                $result[DDeliverySDK::TYPE_COURIER][] = $companyNameList[$companyId];
+                $result[DDeliverySDK::TYPE_COURIER][$companyId] = $companyNameList[$companyId];
         }
         $self = array(4, 21, 11, 16, 42, 17, 37, 3, 1, 7, 39, 47, 41, 38, 40, 25);
         foreach($self as $companyId) {
             if(isset($companyNameList[$companyId]))
-                $result[DDeliverySDK::TYPE_SELF][] = $companyNameList[$companyId];
+                $result[DDeliverySDK::TYPE_SELF][$companyId] = $companyNameList[$companyId];
         }
         return $result;
     }
@@ -471,7 +470,7 @@ class DDeliveryEvents
         return $string;
     }
 
-    /* ����������� ��������� ��������*/
+    /* */
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
         $itemList = array();
@@ -501,6 +500,7 @@ class DDeliveryEvents
 
             $ddOrderId = $arValue['VALUE'];
             $dbBasketItems = CSaleBasket::GetList(Array("ID"=>"ASC"), Array("ORDER_ID"=>$cmsOrderId));
+            $itemList = array();
             while($arBasket = $dbBasketItems->Fetch()) {
                 $itemList[] = $arBasket;
             }

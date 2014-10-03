@@ -195,10 +195,10 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
             $productsDD[] = new DDeliveryProduct(
                 $item['PRODUCT_ID'],	//	int $id id товара в системе и-нет магазина
-                $size['WIDTH']/100,	//	float $width длинна см
-                $size['HEIGHT']/100,	//	float $height высота см
-                $size['LENGTH']/100,	//	float $length ширина см
-                $size['WEIGHT']/1000,	//	float $weight вес кг
+                $size['WIDTH']/10,	//	float $width длинна мм=>см
+                $size['HEIGHT']/10,	//	float $height высота мм=>см
+                $size['LENGTH']/10,	//	float $length ширина мм=>см
+                $size['WEIGHT']/1000,	//	float $weight вес гр=>кг
                 $item['PRICE'],	//	float $price стоимостьв рублях
                 $item['QUANTITY'],	//	int $quantity количество товара
                 $this->toUtf8($item['NAME']),	//	string $name Название вещи
@@ -530,6 +530,17 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
         return $return;
     }
+
+    public function getClientEmail() {
+        foreach($this->getOrderProps() as $prop){
+            if($prop['IS_EMAIL'] == 'Y') {
+                return $this->formData['ORDER_PROP_'.$prop['ID']];
+            }
+        }
+
+        return parent::getClientEmail();
+    }
+
 
     /**
      * Верните id города в системе DDelivery

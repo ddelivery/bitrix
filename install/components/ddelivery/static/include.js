@@ -88,7 +88,7 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
                 " #delivery_info_ddelivery_all a{display: none;} " +
                 " #ddelivery_popup { display: inline-block; vertical-align: middle; margin: 10px auto; width: 1000px; height: 650px;} " +
                 " #ddelivery_container { position: fixed; top: 0; left: 0; z-index: 9999;display: none; width: 100%; height: 100%; text-align: center;  } " +
-                " #ddelivery_container:before { display: inline-block; height: 100%; content: ''; vertical-align: middle;} " +
+                //" #ddelivery_container:before { display: inline-block; height: 100%; content: ''; vertical-align: middle;} " +
                 " #ddelivery_cover {  position: fixed; top: 0; left: 0; z-index: 9000; width: 100%; height: 100%; background-color: #000; background: rgba(0, 0, 0, 0.5); filter: progid:DXImageTransform.Microsoft.gradient(startColorstr = #7F000000, endColorstr = #7F000000); } ";
             var body = document.getElementsByTagName('body')[0];
             body.appendChild(style);
