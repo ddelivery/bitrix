@@ -30,11 +30,8 @@ while($arBasket = $dbBasketItems->Fetch()) {
     $itemList[] = $arBasket;
 }
 
-if(class_exists('DDeliveryShopEx', true)){
-    $IntegratorShop = new DDeliveryShopEx($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
-}else{
-    $IntegratorShop = new DDeliveryShop($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
-}
+$IntegratorShop = DDeliveryEvents::getShopObject($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $_REQUEST['formData']);
+
 try{
     $ddeliveryUI = new DDeliveryUI($IntegratorShop);
     $IntegratorShop->setDDeliveryUI($ddeliveryUI);

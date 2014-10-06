@@ -5,6 +5,7 @@
  * Time: 12:56
  */
 
+use Bitrix\Sale\Delivery\OrderDeliveryTable;
 use DDelivery\DDeliveryUI;
 use DDelivery\Sdk\DDeliverySDK;
 
@@ -55,7 +56,9 @@ class DDeliveryEvents
                     "RESTRICTIONS_WEIGHT" => array(0),
                     "RESTRICTIONS_SUM" => array(0),
                 ),
-            )
+            ),
+            "GETEXTRAINFOPARAMS" => array(__CLASS__, "GetExtraInfoParams"),
+            "GETORDERSACTIONSLIST" => array(__CLASS__, "GetOrdersActionsList"),
         );
     }
     /* Настройки */
@@ -395,6 +398,57 @@ class DDeliveryEvents
         return $arConfig;
     }
 
+    /**
+     * Свойства доставки в админке
+     */
+    public function GetExtraInfoParams($arOrder, $config, $profileId, $siteId)
+    {
+        global $APPLICATION;
+        $orderId = $arOrder['ID'];
+        /*
+        $IntegratorShop = self::getShopObject($config, array(), array());
+        $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
+        $order = $ddeliveryUI->initOrder($ddOrderId);
+        $point = $order->getPoint();*/
+
+        return array(
+            'DD_ABOUT' => array(
+                'TITLE' => '<a href="javascript:void(0)">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+            ),
+        );
+    }
+
+
+
+    /**
+     * В админке "разрешить доставку" можно создать 2 события
+     */
+    public function GetOrdersActionsList()
+    {
+        /*return array(
+            'REQUEST_SELF' => 'REQUEST SELF',
+            'REQUEST_TAKE' => 'REQUEST TAKE',
+        );*/
+    }
+
+    /**
+     * @param $config
+     * @param array $itemList
+     * @param array $requestFromData
+     * @return DDeliveryShop
+     */
+    public static function getShopObject($config, $itemList = array(), $requestFromData = array())
+    {
+        if(class_exists('DDeliveryShopEx', true)){
+            return new DDeliveryShopEx($config, $itemList, $requestFromData);
+        }
+
+        return new DDeliveryShop($config, $itemList, $requestFromData);
+    }
+
+
+
+
     static public function companyList()
     {
         $companyList = DDeliveryUI::getCompanySubInfo();
@@ -430,7 +484,7 @@ class DDeliveryEvents
             if($oldSetting) {
                 $oldSetting = unserialize($oldSetting);
                 if( $oldSetting && $oldSetting['API_KEY'] != $arSettings['API_KEY']){
-                    $IntegratorShop = new DDeliveryShop($arSettings, array(), array());
+                    $IntegratorShop = self::getShopObject($arSettings, array(), array());
                     $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
                     $ddeliveryUI->cleanCache();
                 }
@@ -535,7 +589,7 @@ class DDeliveryEvents
                 return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_BASKET_EMPTY'));
             }
 
-            $IntegratorShop = new DDeliveryShop($arConfig, $itemList, array());
+            $IntegratorShop = self::getShopObject($arConfig, $itemList, array());
             $IntegratorShop->useTaxRate = false;
             $ddeliveryUI = new \DDelivery\DDeliveryUI($IntegratorShop);
             $order = $ddeliveryUI->initOrder($ddOrderId);
@@ -571,7 +625,7 @@ class DDeliveryEvents
     }
 
     /**
-     * ������� ���������� ����� �������� �����. �� ���������� ������ sqlite ID
+     * Хук когда происходит сохранение заказа пользователем
      * @param $iOrderID
      * @param $eventName
      * @param $arFieldsUpdate
@@ -587,8 +641,9 @@ class DDeliveryEvents
 
         if($arOrder["DELIVERY_ID"]=="ddelivery:all" && !empty($_SESSION['DIGITAL_DELIVERY']['ORDER_ID']))
         {
+            global $APPLICATION;
 
-            $db_props = CSaleOrderProps::GetList(
+            /*$db_props = CSaleOrderProps::GetList(
                 array("SORT" => "ASC"),
                 array(
                     "PERSON_TYPE_ID" => $arOrder["PERSON_TYPE_ID"],
@@ -603,7 +658,46 @@ class DDeliveryEvents
                 "NAME" => $property['NAME'],
                 "CODE" => $property['CODE'],
                 "VALUE" => $_SESSION['DIGITAL_DELIVERY']['ORDER_ID']
-            ));
+            ));*/
+            $ddOrderId = $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'];
+
+            $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
+
+            $IntegratorShop = self::getShopObject($DDConfig['CONFIG']['CONFIG'], array(), array());
+            $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
+            $order = $ddeliveryUI->initOrder($ddOrderId);
+            $point = $order->getPoint();
+
+            if( $order->type == DDeliverySDK::TYPE_SELF ){
+                $replaceData = array(
+                    '%1' => $order->cityName,
+                    '%2' => $point['address'],
+                    '%3' => $point['delivery_company_name'],
+                    '%4' => $point['name'],
+                    '%5' => $point['_id'],
+                    '%6' => $point['type'] == 1 ?'Постомат':'ПВЗ',
+                );
+                $replaceData = $APPLICATION->ConvertCharsetArray($replaceData, 'UTF-8', SITE_CHARSET);
+
+                $comment = GetMessage('DDELIVERY_ABOUT_SELF', $replaceData);
+            }else if( $order->type == DDeliverySDK::TYPE_COURIER ){
+                $replaceData = array(
+                    '%1' => $order->getFullAddress(),
+                    '%2' => $point['delivery_company_name']);
+                $replaceData = $APPLICATION->ConvertCharsetArray($replaceData, 'UTF-8', SITE_CHARSET);
+                $comment = GetMessage('DDELIVERY_ABOUT_COURIER', $replaceData);
+            }else{
+                $comment = 'error';
+            }
+
+            $params = array('DD_ABOUT' => $comment, 'DD_LOCAL_ID' => $ddOrderId);
+            $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $iOrderID)))->fetch();
+            if($orderDeliveryTableData) {
+                OrderDeliveryTable::update($orderDeliveryTableData['ID'], array('PARAMS' => serialize($params)));
+            }else{
+                OrderDeliveryTable::add(array('ORDER_ID' => $iOrderID, 'PARAMS' => serialize($params)));
+            }
+
         }
         unset($_SESSION["DIGITAL_DELIVERY"]['ORDER_ID']);
 
@@ -611,7 +705,7 @@ class DDeliveryEvents
     }
 
     /**
-     * ������� ���������� ����� ��������� ������ ������
+     *
      * @param $orderId
      * @param $statusID
      * @throws Bitrix\Main\DB\Exception
@@ -628,7 +722,7 @@ class DDeliveryEvents
             }
             $cmsOrder = CSaleOrder::GetByID($orderId);
 
-            $IntegratorShop = new DDeliveryShop($DDConfig['CONFIG']['CONFIG'], array(), array());
+            $IntegratorShop = self::getShopObject($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
             $order = $ddeliveryUI->initOrder($property['VALUE']);
             if(empty($order))
