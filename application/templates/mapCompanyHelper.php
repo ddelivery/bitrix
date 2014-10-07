@@ -1,7 +1,6 @@
 <?
 /**
  * @var \DDelivery\DDeliveryUI $this
- * @var \DDelivery\Point\DDeliveryInfo[] $selfCompanyList
  * @var string $staticURL
  */
 ?>
@@ -32,7 +31,7 @@
     <?php   }else{ ?>
         <li>
             <div style="text-align: center">
-                Извините, этот способ доставки не доступен для выбранного города.
+                <?=$this->shop->getEmptyCompanyError($this->order);?>
             </div>
         </li>
     <?php        } ?>

@@ -68,7 +68,7 @@ abstract class PluginFilters extends DShopAdapter
     const AROUND_CEIL = 3;
 
 
-    public  function  getErrorMsg( \Exception $e, $extraParams = array() ){
+    public static function  getErrorMsg( \Exception $e, $extraParams = array() ){
         return $e->getMessage();
     }
     /**
@@ -80,8 +80,8 @@ abstract class PluginFilters extends DShopAdapter
      *
      * @return mixed
      */
-    public function logMessage( \Exception $e, $extraParams = array() ){
-        $logginUrl = $this->getLogginServer();
+    public static  function  logMessage( \Exception $e, $extraParams = array() ){
+        $logginUrl = self::getLogginServer();
         if( !is_null( $logginUrl ) ){
             $curl = curl_init();
             curl_setopt($curl, CURLOPT_RETURNTRANSFER, TRUE);
@@ -89,13 +89,13 @@ abstract class PluginFilters extends DShopAdapter
             curl_setopt($curl, CURLOPT_URL, $logginUrl);
             curl_setopt($curl, CURLOPT_POST, true);
 
-            $message = $this->getErrorMsg($e, $extraParams);
+            $message = self::getErrorMsg($e, $extraParams);
 
             $params = array('message' => $message . ', версия SDK -' . DShopAdapter::SDK_VERSION . ', '
                 . $e->getFile() . ', '
                 . $e->getLine() . ', ' . date("Y-m-d H:i:s"), 'url' => $_SERVER['SERVER_NAME'],
-                'apikey' => $this->getApiKey(),
-                'testmode' => (int)$this->isTestMode());
+                'apikey' => self::getApiKey(),
+                'testmode' => (int)self::isTestMode());
             $urlSuffix = '';
             foreach($params as $key => $value) {
                 $urlSuffix .= urlencode($key).'='.urlencode($value) . '&';
@@ -234,7 +234,8 @@ abstract class PluginFilters extends DShopAdapter
      */
     public function sendOrderToDDeliveryServer( $order ){
         $point = $order->getPoint();
-        if( array_key_exists( $point['delivery_company'], $this->customCourierCompanies ) || array_key_exists( $point['delivery_company'], $this->customSelfCompanies )){
+        if( array_key_exists( $point['delivery_company'], $this->getCustomCourierCompanies() ) ||
+            array_key_exists( $point['delivery_company'], $this->getCustomSelfCompanies() )){
 
             return false;
         }
@@ -449,5 +450,35 @@ abstract class PluginFilters extends DShopAdapter
     public function getCustomSelfPoints(){
         return array();
     }
+
+    /**
+     *
+     * Текст когда компании не найдены
+     *
+     * @param DDeliveryOrder $order
+     * @return mixed
+     */
+    public function getEmptyCompanyError( $order ){
+        return 'Извините, этот способ доставки не доступен для выбранного города.';
+    }
+
+    /**
+     * Учитывать фильтрацию НПП при работе
+     * @param $order DDeliveryOrder
+     * @return array
+     */
+    public function getPaymentFilterEnabled( $order ){
+        return true;
+    }
+
+    public  function getSelfPaymentVariants($order){
+        return array();
+    }
+
+    public function getCourierPaymentVariants($order){
+        return array();
+    }
+
+
 
 }

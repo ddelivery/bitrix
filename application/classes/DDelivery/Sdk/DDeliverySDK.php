@@ -73,6 +73,7 @@ class DDeliverySDK {
      * @param String  $to_flat
      * @param String  $to_email
      * @param String $metadata
+     * @param string $to_index
      *
      * @throws DDeliveryException
      *
@@ -82,7 +83,7 @@ class DDeliverySDK {
     		                         $dimensionSide2, $dimensionSide3, $shop_refnum,
                                      $confirmed, $weight, $to_name, $to_phone, $goods_description,
     		                         $declaredPrice, $paymentPrice, $to_street, $to_house, $to_flat,
-                                     $to_email = '', $metadata = '' )
+                                     $to_email = '', $metadata = '', $to_index )
     {
         $params = array(
             'type' => self::TYPE_COURIER,
@@ -103,7 +104,8 @@ class DDeliverySDK {
             'to_house' => $to_house,
             'to_flat' => $to_flat,
             'to_email' => $to_email,
-            'metadata' => $metadata
+            'metadata' => $metadata,
+            'to_index' => $to_index
         );
     	$response = $this->requestProvider->request( 'order_create', $params, 'post' );
 
@@ -191,6 +193,23 @@ class DDeliverySDK {
         return $response;
     }
 
+    /**
+     *
+     * Возможность НПП в городе или регионе
+     *
+     * @param $city
+     * @param $company
+     *
+     * @return DDeliverySDKResponse $response
+     */
+    public function paymentPriceEnable( $city, $company ){
+        $params = array(
+            'city' => $city,
+            'company' => $company
+        );
+        $response = $this->requestProvider->request( 'paymentprice', $params );
+        return $response;
+    }
 
     /**
      * Получить список точек для самовывоза
@@ -207,8 +226,7 @@ class DDeliverySDK {
     			'companies' => $companies
     	);
     	$response = $this->requestProvider->request('geoip', $params, 'get', $this->server . 'node');
-    	if( !$response->success )
-    	{
+    	if( !$response->success ){
             $errorMsg = (is_array($response->errorMessage))?implode(', ', $response->errorMessage):$response->errorMessage;
             throw new DDeliveryException( $errorMsg );
     	}
