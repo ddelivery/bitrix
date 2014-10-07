@@ -19,7 +19,6 @@ class DDeliveryEvents
         /** @var $arModuleVersion string[] */
         $select = GetMessage('DDELIVERY_SELECT');
         $html = '
-            <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
             <script src="/bitrix/components/ddelivery/static/include.js" language="javascript" charset="utf-8"></script>
             <script src="/bitrix/components/ddelivery/static/js/ddelivery.js" language="javascript" charset="utf-8"></script>
 
@@ -725,7 +724,7 @@ class DDeliveryEvents
             $IntegratorShop = self::getShopObject($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
             $order = $ddeliveryUI->initOrder($property['VALUE']);
-            if(empty($order))
+            if(empty($order) || $order->ddeliveryID)
                 return;
             $order->localStatus = $statusID;
 
