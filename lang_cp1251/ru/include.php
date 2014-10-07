@@ -41,10 +41,10 @@ $MESS["DDELIVERY_CONFIG_PRICE_IF_SECTION"] = 'Как меняется стоимость доставки в 
 $MESS["DDELIVERY_CONFIG_SUPPORTED_TYPE"] = "Способы доставки";
 $MESS["DDELIVERY_CONFIG_GROUPS_PRICE"] = "Оплата доставки";
 
-$MESS["DDELIVERY_CONFIG_DEFAULT_X"] = "Ширина по умолчанию";
-$MESS["DDELIVERY_CONFIG_DEFAULT_Y"] = "Высота по умолчанию";
-$MESS["DDELIVERY_CONFIG_DEFAULT_Z"] = "Длина по умолчанию";
-$MESS["DDELIVERY_CONFIG_DEFAULT_W"] = "Вес по умолчанию";
+$MESS["DDELIVERY_CONFIG_DEFAULT_X"] = "Ширина по умолчанию мм";
+$MESS["DDELIVERY_CONFIG_DEFAULT_Y"] = "Высота по умолчанию мм";
+$MESS["DDELIVERY_CONFIG_DEFAULT_Z"] = "Длина по умолчанию мм";
+$MESS["DDELIVERY_CONFIG_DEFAULT_W"] = "Вес по умолчанию гр";
 $MESS["DDELIVERY_CONFIG_PROP_FIO"] = "Свойство Ф.И.О.";
 $MESS["DDELIVERY_CONFIG_PROP_PHONE"] = "Свойство телефон";
 
@@ -78,6 +78,8 @@ $MESS["DDELIVERY_ROUND"] = 'Математическое';
 $MESS["DDELIVERY_RUR"] = 'руб.';
 $MESS["DDELIVERY_STEP"] = 'шаг';
 $MESS["DDELIVERY_PAY_PICKUP"] = 'Выводить стоимость забора в цене доставки';
-
+$MESS["DDELIVERY_ABOUT_SELF"] = 'Самовывоз, %1 %2, %3, %4, ID точки - %4, %5';
+$MESS["DDELIVERY_ABOUT_COURIER"] = 'Доставка курьером по адресу %1, %2';
+$MESS["DDELIVERY_ABOUT_EDIT"] = 'Редактировать';
 
 ?>

@@ -402,17 +402,11 @@ class DDeliveryEvents
      */
     public function GetExtraInfoParams($arOrder, $config, $profileId, $siteId)
     {
-        global $APPLICATION;
-        $orderId = $arOrder['ID'];
-        /*
-        $IntegratorShop = self::getShopObject($config, array(), array());
-        $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
-        $order = $ddeliveryUI->initOrder($ddOrderId);
-        $point = $order->getPoint();*/
-
+        // $arOrder['ID']
         return array(
             'DD_ABOUT' => array(
-                'TITLE' => '<a href="javascript:void(0)">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+                'TITLE' => ' ',
+                //'TITLE' => '<a href="javascript:void(0)">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
             ),
         );
     }
@@ -642,22 +636,6 @@ class DDeliveryEvents
         {
             global $APPLICATION;
 
-            /*$db_props = CSaleOrderProps::GetList(
-                array("SORT" => "ASC"),
-                array(
-                    "PERSON_TYPE_ID" => $arOrder["PERSON_TYPE_ID"],
-                    'CODE' => 'DDELIVERY_ID',
-                )
-            );
-            $property = $db_props->Fetch();
-
-            CSaleOrderPropsValue::Add(array(
-                "ORDER_ID" => $iOrderID,
-                "ORDER_PROPS_ID" => $property['ID'],
-                "NAME" => $property['NAME'],
-                "CODE" => $property['CODE'],
-                "VALUE" => $_SESSION['DIGITAL_DELIVERY']['ORDER_ID']
-            ));*/
             $ddOrderId = $_SESSION['DIGITAL_DELIVERY']['ORDER_ID'];
 
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
@@ -672,9 +650,8 @@ class DDeliveryEvents
                     '%1' => $order->cityName,
                     '%2' => $point['address'],
                     '%3' => $point['delivery_company_name'],
-                    '%4' => $point['name'],
-                    '%5' => $point['_id'],
-                    '%6' => $point['type'] == 1 ?'Постомат':'ПВЗ',
+                    '%4' => $point['_id'],
+                    '%5' => $point['type'] == 1 ?'Постомат':'ПВЗ',
                 );
                 $replaceData = $APPLICATION->ConvertCharsetArray($replaceData, 'UTF-8', SITE_CHARSET);
 
