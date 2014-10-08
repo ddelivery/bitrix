@@ -48,6 +48,31 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
                 document.getElementById('ddelivery_container').style.display = 'block';
             }
 
+            function buildUrlParam(obj)
+            {
+                var s = [];
+                var add = function(k, v){
+                    s[ s.length ] = encodeURIComponent( k ) + "=" + encodeURIComponent( v );
+                };
+                var build = function(prefix, obj) {
+                    if(typeof obj == 'object') {
+                        for(var name in obj) {
+                            if(prefix.length == 0) {
+                                build(name, obj[name]);
+                            }else{
+                                build(prefix + "[" + name + "]", obj[name]);
+                            }
+                        }
+                    } else {
+                        add(prefix, obj);
+                    }
+                };
+
+                build('', obj);
+
+                return s.join('&');
+            }
+
             th.openPopup = function(){
                 showPrompt();
                 document.getElementById('ddelivery_popup').innerHTML = '';
@@ -55,13 +80,19 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
                 var params = {
                     formData: {}
                 };
-                var form = $('#ORDER_FORM');
-                if(form.length == 0) {
-                    form = $('#ORDER_FORM_ID_NEW');
+                var form = document.getElementById('ORDER_FORM');
+                if(form == null) {
+                    form = document.getElementById('ORDER_FORM_ID_NEW');
                 }
-                $(form.serializeArray()).each(function(){
-                    params.formData[this.name] = this.value;
-                });
+                var curEl,
+                    rinput = /^(?:color|date|datetime|datetime-local|email|hidden|month|number|password|range|search|tel|text|time|url|week)$/i,
+                    rselectTextarea = /^(?:select|textarea)/i;
+                for(var i = 0; i < form.length ; i++) {
+                    curEl = form[i];
+                    if(curEl.name && !curEl.disabled && ( curEl.checked || rselectTextarea.test( curEl.nodeName ) || rinput.test( curEl.type ) )) {
+                        params.formData[curEl.name] = curEl.value;
+                    }
+                }
 
                 var callback = {
                     close: function(){
@@ -75,11 +106,11 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
                         hideCover();
                         document.getElementById('ddelivery_container').style.display = 'none';
 
-                        $('#ID_DELIVERY_ddelivery_all').click();
+                        document.getElementById('ID_DELIVERY_ddelivery_all').click();
                     }
                 };
 
-                DDelivery.delivery('ddelivery_popup', '/bitrix/components/ddelivery/static/ajax.php?'+$.param(params), {/*orderId: 4*/}, callback);
+                DDelivery.delivery('ddelivery_popup', '/bitrix/components/ddelivery/static/ajax.php?'+buildUrlParam(params), {/*orderId: 4*/}, callback);
 
                 return void(0);
             };
