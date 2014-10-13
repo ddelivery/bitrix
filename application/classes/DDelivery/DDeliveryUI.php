@@ -1211,6 +1211,11 @@ use DDelivery\Order\DDeliveryOrder;
                 $this->order->cityName = $cityData['display_name'];
             }
 
+            if($this->order->city && !$this->order->cityName) {
+                $cityData = $this->cityLocator->getCity($this->order->city);
+                $this->order->cityName = $cityData['display_name'];
+            }
+
             if( !$this->order->localId ){
                 $this->order->localId = $this->saveFullOrder($this->order);
             }
@@ -1260,11 +1265,8 @@ use DDelivery\Order\DDeliveryOrder;
                         return;
                     case 'mapGetPoint':
                         if(!empty($request['id'])) {
-
                             $pointSelf = $this->calculateSelfPointPrice( $this->order, (int)$request['id'] );
                             $pointInfo = $this->getSelfPointsList($this->order, $pointSelf);
-
-
 
                             if(empty($pointSelf) || empty($pointInfo)) {
                                 echo json_encode(array('point'=>array()));

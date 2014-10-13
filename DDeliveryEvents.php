@@ -402,11 +402,9 @@ class DDeliveryEvents
      */
     public function GetExtraInfoParams($arOrder, $config, $profileId, $siteId)
     {
-        // $arOrder['ID']
         return array(
             'DD_ABOUT' => array(
-                'TITLE' => ' ',
-                //'TITLE' => '<a href="javascript:void(0)">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+                'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
             ),
         );
     }

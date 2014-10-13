@@ -11,6 +11,7 @@ IncludeModuleLangFile(__FILE__);
 
 Class ddelivery_ddelivery extends CModule
 {
+    const MODULE_ID = "ddelivery.ddelivery";
     var $MODULE_ID = "ddelivery.ddelivery";
     public $MODULE_GROUP_RIGHTS = 'N';
     public $NEED_MAIN_VERSION = '14.0.0';
@@ -48,6 +49,43 @@ Class ddelivery_ddelivery extends CModule
         $this->MODULE_DESCRIPTION = $this->GetMessage('DDELIVERY_MODULE_DESCRIPTION');
     }
 
+    function InstallFiles($arParams = array())
+    {
+        if (is_dir($admin = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/admin'))
+        {
+            if ($dir = opendir($admin))
+            {
+                while (false !== $item = readdir($dir))
+                {
+                    if ($item == '..' || $item == '.' || $item == 'menu.php')
+                        continue;
+                    file_put_contents($file = $_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.self::MODULE_ID.'_'.$item,
+                        '<'.'? require($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/'.self::MODULE_ID.'/admin/'.$item.'");?'.'>');
+                }
+                closedir($dir);
+            }
+        }
+        return true;
+    }
+
+    function UnInstallFiles()
+    {
+        if (is_dir($admin = $_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.self::MODULE_ID.'/admin'))
+        {
+            if ($dir = opendir($admin))
+            {
+                while (false !== $item = readdir($dir))
+                {
+                    if ($item == '..' || $item == '.')
+                        continue;
+                    unlink($_SERVER['DOCUMENT_ROOT'].'/bitrix/admin/'.self::MODULE_ID.'_'.$item);
+                }
+                closedir($dir);
+            }
+        }
+        return true;
+    }
+
     public function DoInstall() {
         if ($GLOBALS['APPLICATION']->GetGroupRight('main') < 'W')
             return;
@@ -60,14 +98,17 @@ Class ddelivery_ddelivery extends CModule
                 }
             }
         }
+        if(!function_exists('curl_init')) {
+            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES'));
+        }
         if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
-            RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
-            RegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-            RegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+            RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');
+            RegisterModuleDependences('sale', 'OnOrderNewSendEmail', self::MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
+            RegisterModuleDependences('sale', 'OnSaleStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
             if(!symlink(__DIR__."/components/ddelivery", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")){
                 CopyDirFiles(__DIR__."/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
             }
-            RegisterModule($this->MODULE_ID);
+            RegisterModule(self::MODULE_ID);
 
             CModule::IncludeModule("sale");
 
@@ -134,9 +175,9 @@ Class ddelivery_ddelivery extends CModule
         $DB->Query("DROP TABLE IF EXISTS ddelivery_cache", false, __FILE__.':'.__LINE__);
         $DB->Query("DROP TABLE IF EXISTS ddelivery_ps_dd_cities", false, __FILE__.':'.__LINE__);
 
-        UnRegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', $this->MODULE_ID, 'DDeliveryEvents', 'Init');
-        UnRegisterModuleDependences('sale', 'OnOrderNewSendEmail', $this->MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-        UnRegisterModuleDependences('sale', 'OnSaleStatusOrder', $this->MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+        UnRegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');
+        UnRegisterModuleDependences('sale', 'OnOrderNewSendEmail', self::MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
+        UnRegisterModuleDependences('sale', 'OnSaleStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
 
 
         if(is_link($_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")) {
@@ -145,7 +186,7 @@ Class ddelivery_ddelivery extends CModule
             DeleteDirFilesEx("/bitrix/components/ddelivery");
         }
 
-        UnRegisterModule($this->MODULE_ID);
+        UnRegisterModule(self::MODULE_ID);
         $this->ShowForm('OK', GetMessage('MOD_UNINST_OK'));
 
     }
