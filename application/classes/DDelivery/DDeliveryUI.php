@@ -453,7 +453,7 @@ use DDelivery\Order\DDeliveryOrder;
             $enabled = $this->paymentPriceEnable($order);
             if( !$enabled ){
                 if( (count($this->shop->getCourierPaymentVariants( $order ))  > 0) &&
-                        !in_array( $order->paymentVariant, $this->shop->getCourierPaymentVariants( $order ) ) ){
+                           in_array( $order->paymentVariant, $this->shop->getCourierPaymentVariants( $order ) ) ){
                     $errors[] = "Нет попадания в список возможных способов оплаты";
                 }
             }
@@ -506,7 +506,7 @@ use DDelivery\Order\DDeliveryOrder;
             $enabled = $this->paymentPriceEnable($order);
             if( !$enabled ){
                 if( (count($this->shop->getSelfPaymentVariants( $order ))  > 0) &&
-                        !in_array( $order->paymentVariant, $this->shop->getSelfPaymentVariants( $order ) ) ){
+                         in_array( $order->paymentVariant, $this->shop->getSelfPaymentVariants( $order ) ) ){
                     $errors[] = "Нет попадания в список возможных способов оплаты";
                 }
             }
@@ -1182,6 +1182,7 @@ use DDelivery\Order\DDeliveryOrder;
                 $styleUrl = $this->shop->getStaticPath() . 'tems/' . $this->shop->getTemplate() . '/';
                 $scriptURL = $this->shop->getPhpScriptURL();
                 $version = DShopAdapter::SDK_VERSION;
+                $captions = $this->shop->getCaptions();
                 include(__DIR__ . '/../../templates/iframe.php');
                 return;
             }
@@ -1211,13 +1212,13 @@ use DDelivery\Order\DDeliveryOrder;
                 $this->order->cityName = $cityData['display_name'];
             }
 
+            if( !$this->order->localId ){
+                $this->order->localId = $this->saveFullOrder($this->order);
+            }
+
             if($this->order->city && !$this->order->cityName) {
                 $cityData = $this->cityLocator->getCity($this->order->city);
                 $this->order->cityName = $cityData['display_name'];
-            }
-
-            if( !$this->order->localId ){
-                $this->order->localId = $this->saveFullOrder($this->order);
             }
 
 
@@ -1265,8 +1266,11 @@ use DDelivery\Order\DDeliveryOrder;
                         return;
                     case 'mapGetPoint':
                         if(!empty($request['id'])) {
+
                             $pointSelf = $this->calculateSelfPointPrice( $this->order, (int)$request['id'] );
                             $pointInfo = $this->getSelfPointsList($this->order, $pointSelf);
+
+
 
                             if(empty($pointSelf) || empty($pointInfo)) {
                                 echo json_encode(array('point'=>array()));
@@ -1576,7 +1580,7 @@ use DDelivery\Order\DDeliveryOrder;
                 $selfCompanies = $this->cachedCalculateSelfPrices( $this->order );
                 if(count( $selfCompanies )){
 
-                    $minPrice = $this->getClientPrice( $selfCompanies[0], $this->order, DDeliverySDK::TYPE_SELF  );
+                    $minPrice = $this->getClientPrice( reset($selfCompanies), $this->order, DDeliverySDK::TYPE_SELF  );
                     $minTime = PHP_INT_MAX;
                     foreach( $selfCompanies as $selfCompany ) {
                         if($minTime > $selfCompany['delivery_time_min']){
@@ -1596,7 +1600,7 @@ use DDelivery\Order\DDeliveryOrder;
                 $courierCompanies = $this->cachedCalculateCourierPrices( $this->order );
 
                 if(count( $courierCompanies )){
-                    $minPrice = $this->getClientPrice( $courierCompanies[0], $this->order, DDeliverySDK::TYPE_COURIER  );
+                    $minPrice = $this->getClientPrice( reset($courierCompanies), $this->order, DDeliverySDK::TYPE_COURIER  );
                     $minTime = PHP_INT_MAX;
                     foreach( $courierCompanies as $courierCompany ) {
                         if($minTime > $courierCompany['delivery_time_min']){
@@ -1734,16 +1738,16 @@ use DDelivery\Order\DDeliveryOrder;
             include(__DIR__.'/../../templates/contactForm.php');
             $content = ob_get_contents();
             ob_end_clean();
-
-            return json_encode(array('html'=>$content, 'js'=>'contactForm', 'orderId' => $this->order->localId, 'type'=>DDeliverySDK::TYPE_COURIER));
+            $content = str_replace('<input', '<inp!KasperskyHack!ut', $content);
+            $html = json_encode(array('html'=>$content, 'js'=>'contactForm', 'orderId' => $this->order->localId, 'type'=>DDeliverySDK::TYPE_COURIER));
+            return $html;
         }
 
         /**
          * Возвращает дополнительную информацию по компаниям доставки
          * @return array
          */
-        static public function getCompanySubInfo()
-        {
+        static public function getCompanySubInfo(){
             // pack забита для тех у кого нет иконки
             return array(
                 1 => array('name' => 'PickPoint', 'ico' => 'pickpoint'),
@@ -1782,6 +1786,14 @@ use DDelivery\Order\DDeliveryOrder;
                 44 => array('name' => 'Почта России', 'ico' => 'russianpost'),
                 45 => array('name' => 'Aplix курьерская доставка', 'ico' => 'aplix'),
                 48 => array('name' => 'Aplix IML курьерская доставка', 'ico' => 'aplix_imlogistics'),
+                49 => array('name' => 'IML Забор', 'ico' => 'imlogistics'),
+                50 => array('name' => 'Почта России 1-й класс', 'ico' => 'mail'),
+                51 => array('name' => 'EMS Почта России', 'ico' => 'ems'),
+
+                52 => array('name' => 'ЕКБ-доставка забор', 'ico' => 'pack'),
+                53 => array('name' => 'ЕКБ-доставка курьер', 'ico' => 'pack'),
+                54 => array('name' => 'Почта России 1-й класс.', 'ico' => 'mail'),
+                55 => array('name' => 'Почта России.', 'ico' => 'mail')
 
             );
         }

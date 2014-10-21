@@ -68,8 +68,6 @@ class DDeliveryEvents
             array("SORT" => "ASC"),
             array(
                 "ACTIVE" => 'Y',
-                "USER_PROPS" => "Y",
-                'REQUIED' => 'Y',
             ),
             false,
             false,
@@ -169,6 +167,14 @@ class DDeliveryEvents
                     "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_PHONE'),
                     "GROUP" => "general",
                 ),
+
+                "PROP_ADDRESS" => array(
+                    "TYPE"=>"DROPDOWN",
+                    "DEFAULT" => "ADDRESS",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_ADDRESS'),
+                    "GROUP" => "general",
+                ),
+
             )
         );
 
@@ -393,6 +399,7 @@ class DDeliveryEvents
         $arConfig['CONFIG']['SEND_STATUS']['VALUES'] = $sendStatusValues;
         $arConfig['CONFIG']['PROP_FIO']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_PHONE']['VALUES'] = $props;
+        $arConfig['CONFIG']['PROP_ADDRESS']['VALUES'] = $props;
 
         return $arConfig;
     }
@@ -402,6 +409,8 @@ class DDeliveryEvents
      */
     public function GetExtraInfoParams($arOrder, $config, $profileId, $siteId)
     {
+        if(empty($arOrder['ID']))
+            return;
         return array(
             'DD_ABOUT' => array(
                 'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
@@ -448,7 +457,8 @@ class DDeliveryEvents
         foreach($companyList as $id => $company) {
             $companyNameList[$id] = $APPLICATION->ConvertCharsetArray($company['name'], 'utf-8', SITE_CHARSET);
         }
-        $courier = array(45, 29, 23, 27, 28, 20, 35, 36, 30, 31, 22, 43, 17, 48, 46, 14, 41, 13,44, 40, 26, 24);
+        $courier = array(45, 29, 23, 27, 28, 20, 35, 36, 30, 31, 22, 43, 17, 48, 46, 14, 41, 13,44, 40, 26, 24, 49, 50,
+            51, 52, 53, 54, 55);
         $result = array(DDeliverySDK::TYPE_SELF => array(), DDeliverySDK::TYPE_COURIER => array());
         foreach($courier as $companyId) {
             if(isset($companyNameList[$companyId]))

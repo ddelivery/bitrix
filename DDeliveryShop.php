@@ -482,8 +482,9 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * @return string|null
      */
     public function getClientFirstName() {
+        $fioProp = $this->config('PROP_FIO');
         foreach($this->getOrderProps() as $prop){
-            if($prop['IS_PROFILE_NAME'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+            if($prop['CODE'] == $fioProp) {
                 return $this->formData['ORDER_PROP_'.$prop['ID']];
             }
         }
@@ -503,8 +504,9 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * @return string|null
      */
     public function getClientPhone() {
+        $propCode = $this->config('PROP_PHONE');
         foreach($this->getOrderProps() as $prop){
-            if($prop['CODE'] == 'PHONE' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+            if($prop['CODE'] == $propCode) {
                 $phone = preg_replace('/[^0-9]/', '', $this->formData['ORDER_PROP_'.$prop['ID']]);
                 if(strlen($phone) && $phone{0} == '8') {
                     $phone{0} = 7;
@@ -520,9 +522,10 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * @return string[]
      */
     public function getClientAddress() {
+        $propCode = $this->config('PROP_ADDRESS');
         $return = array(array());
         foreach($this->getOrderProps() as $prop){
-            if($prop['CODE'] == 'ADDRESS' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+            if($prop['CODE'] == $propCode && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
                 $return[0] = $this->formData['ORDER_PROP_'.$prop['ID']];
                 break;
             }

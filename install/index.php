@@ -104,7 +104,7 @@ Class ddelivery_ddelivery extends CModule
         if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
             RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');
             RegisterModuleDependences('sale', 'OnOrderNewSendEmail', self::MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-            RegisterModuleDependences('sale', 'OnSaleStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+            RegisterModuleDependences('sale', 'OnSaleBeforeStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleBeforeStatusOrder');
             if(!symlink(__DIR__."/components/ddelivery", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")){
                 CopyDirFiles(__DIR__."/components", $_SERVER["DOCUMENT_ROOT"]."/bitrix/components", true, true);
             }
