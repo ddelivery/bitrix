@@ -177,7 +177,7 @@ Class ddelivery_ddelivery extends CModule
 
         UnRegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');
         UnRegisterModuleDependences('sale', 'OnOrderNewSendEmail', self::MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
-        UnRegisterModuleDependences('sale', 'OnSaleStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleStatusOrder');
+        UnRegisterModuleDependences('sale', 'OnSaleBeforeStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleBeforeStatusOrder');
 
 
         if(is_link($_SERVER["DOCUMENT_ROOT"]."/bitrix/components/ddelivery")) {

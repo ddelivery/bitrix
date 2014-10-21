@@ -413,7 +413,8 @@ class DDeliveryEvents
             return;
         return array(
             'DD_ABOUT' => array(
-                'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+                //'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+                'TITLE' => GetMessage('DDELIVERY_ABOUT_DELIVERY'),
             ),
         );
     }
@@ -694,23 +695,38 @@ class DDeliveryEvents
      * @param $statusID
      * @throws Bitrix\Main\DB\Exception
      */
-    static function OnSaleStatusOrder($orderId, $statusID)
+    static function OnSaleBeforeStatusOrder($orderId, $statusID)
     {
-        $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
-        if(!$property)
-            return;
+        $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $orderId)))->fetch();
+        if(empty($orderDeliveryTableData)) {
+            return true;
+        }
+
+        $property = unserialize($orderDeliveryTableData['PARAMS']);
+        if(empty($property) || empty($property['DD_LOCAL_ID'])){
+            return true;
+        }
+        global $APPLICATION;
+
+        $ddLocalId = $property['DD_LOCAL_ID'];
+
+
         try{
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
             if($statusID != $DDConfig['CONFIG']['CONFIG']['SEND_STATUS']['VALUE']) {
                 return;
             }
             $cmsOrder = CSaleOrder::GetByID($orderId);
+            if($cmsOrder['DELIVERY_ID'] != 'ddelivery:all')
+                return true;
 
             $IntegratorShop = self::getShopObject($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
-            $order = $ddeliveryUI->initOrder($property['VALUE']);
-            if(empty($order) || $order->ddeliveryID)
-                return;
+            $order = $ddeliveryUI->initOrder($ddLocalId);
+            if(empty($order) || $order->ddeliveryID) {
+                $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_ORDER_NOT_LOAD'));
+                return false;
+            }
             $order->localStatus = $statusID;
 
             /**
@@ -721,14 +737,14 @@ class DDeliveryEvents
             $ddeliveryOrderID = $ddeliveryUI->sendOrderToDD( $order);
             $ddeliveryUI->saveFullOrder($order);
             if(!$ddeliveryOrderID) {
-                throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
+                $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_NOT_SAVE'));
+                return false;
             }
             CSaleOrder::Update($orderId, array("TRACKING_NUMBER" => $ddeliveryOrderID));
-        }
-        catch(\DDelivery\DDeliveryException $e)
-        {
-            throw new \Bitrix\Main\DB\Exception("Error save order by DDelivery");
-
+            return true;
+        }  catch(\DDelivery\DDeliveryException $e)  {
+            $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_EXCEPTION', ['%1' => $e->getMessage()]));
+            return false;
         }
 
     }
