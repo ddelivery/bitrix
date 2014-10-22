@@ -174,6 +174,13 @@ class DDeliveryEvents
                     "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_ADDRESS'),
                     "GROUP" => "general",
                 ),
+                "PROP_ZIP_CODE" => array(
+                    "TYPE"=>"DROPDOWN",
+                    "DEFAULT" => "ZIP",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_ZIP_CODE'),
+                    "GROUP" => "general",
+                    'POST_TEXT' => '',
+                ),
 
             )
         );
@@ -400,6 +407,7 @@ class DDeliveryEvents
         $arConfig['CONFIG']['PROP_FIO']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_PHONE']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_ADDRESS']['VALUES'] = $props;
+        $arConfig['CONFIG']['PROP_ZIP_CODE']['VALUES'] = $props;
 
         return $arConfig;
     }

@@ -464,12 +464,12 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
 
     public function getCourierRequiredFields()
     {
-        return parent::getCourierRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
+        return parent::getCourierRequiredFields() | self::FIELD_EDIT_INDEX & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
     }
 
     public function getSelfRequiredFields()
     {
-        return parent::getSelfRequiredFields() & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
+        return parent::getSelfRequiredFields() | self::FIELD_EDIT_INDEX & ~ self::FIELD_EDIT_SECOND_NAME & ~ self::FIELD_REQUIRED_SECOND_NAME;
     }
 
     public function isStatusToSendOrder($status)
@@ -492,14 +492,6 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Если вы знаете фамилию покупателя, сделайте чтобы оно вернулось в этом методе
-     * @return string|null
-     */
-    public function getClientLastName() {
-        return null;
-    }
-
-    /**
      * Если вы знаете телефон покупателя, сделайте чтобы оно вернулось в этом методе. 11 символов, например 79211234567
      * @return string|null
      */
@@ -516,6 +508,23 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         }
         return null;
     }
+
+    /**
+     * Если вы знаете индекс(zip code), то верните его тут
+     * @return string|null
+     */
+    public function getClientZipCode()
+    {
+        $propCode = $this->config('PROP_ZIP_CODE');
+        foreach($this->getOrderProps() as $prop){
+            if($prop['CODE'] == $propCode) {
+                return $this->formData['ORDER_PROP_'.$prop['ID']];
+            }
+        }
+
+        return null;
+    }
+
 
     /**
      * Верни массив Адрес, Дом, Корпус, Квартира. Если не можешь можно вернуть все в одном поле и настроить через get*RequiredFields
