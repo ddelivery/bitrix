@@ -99,7 +99,8 @@ Class ddelivery_ddelivery extends CModule
             }
         }
         if(!function_exists('curl_init')) {
-            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES'));
+            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => 'cURL')));
+            return;
         }
         if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
             RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');

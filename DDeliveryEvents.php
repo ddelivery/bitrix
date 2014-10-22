@@ -686,7 +686,7 @@ class DDeliveryEvents
                 $comment = GetMessage('DDELIVERY_ABOUT_SELF', $replaceData);
             }else if( $order->type == DDeliverySDK::TYPE_COURIER ){
                 $replaceData = array(
-                    '%1' => $order->getFullAddress(),
+                    '%1' => $order->cityName.' '.$order->getFullAddress(),
                     '%2' => $point['delivery_company_name']);
                 $replaceData = $APPLICATION->ConvertCharsetArray($replaceData, 'UTF-8', SITE_CHARSET);
                 $comment = GetMessage('DDELIVERY_ABOUT_COURIER', $replaceData);
