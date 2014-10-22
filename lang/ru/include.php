@@ -57,6 +57,9 @@ $MESS["DDELIVERY_X"] = "Ширина";
 $MESS["DDELIVERY_Y"] = "Высота";
 $MESS["DDELIVERY_Z"] = 'Длина';
 $MESS["DDELIVERY_W"] = "Вес";
+$MESS["DDELIVERY_ARTICUL"] = 'Артикул';
+$MESS["DDELIVERY_NONE"] = 'Нет';
+
 $MESS["DDELIVERY_DEFAULT_SIZE"] = "Габариты по умолчанию";
 $MESS["DDELIVERY_EMPTY_POINT"] = "Не выбран пункт доставки";
 

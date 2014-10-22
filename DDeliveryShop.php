@@ -168,15 +168,17 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
                 'HEIGHT' => $this->config('IBLOCK_'.$iblock.'_Y'),
                 'LENGTH' => $this->config('IBLOCK_'.$iblock.'_Z'),
                 'WEIGHT' => $this->config('IBLOCK_'.$iblock.'_W'),
+                'ARTICUL' => $this->config('IBLOCK_'.$iblock.'_ARTICUL'),
             );
             $size = array(
                 'WIDTH' => $this->config('DEFAULT_X'),
                 'HEIGHT' => $this->config('DEFAULT_Y'),
                 'LENGTH' => $this->config('DEFAULT_Z'),
                 'WEIGHT' => $this->config('DEFAULT_W'),
+                'ARTICUL' => '-',
             );
 
-            if($elProperty['WIDTH'] || $elProperty['LENGTH'] || $elProperty['HEIGHT'] || $elProperty['WEIGHT']) {
+            if($elProperty['WIDTH'] || $elProperty['LENGTH'] || $elProperty['HEIGHT'] || $elProperty['WEIGHT'] || $elProperty['ARTICUL']) {
                 $iblockElPropDB = CIBlockElement::GetProperty($iblock, $item['PRODUCT_ID'], array(), array('ID' => array_values($elProperty)));
                 while($iblockElProp = $iblockElPropDB->Fetch()) {
                     foreach($elProperty as $k => $v) {
@@ -202,7 +204,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
                 $item['PRICE'],	//	float $price стоимостьв рублях
                 $item['QUANTITY'],	//	int $quantity количество товара
                 $this->toUtf8($item['NAME']),	//	string $name Название вещи
-                '-' // @todo
+                $size['ARTICUL'] // артикул
             );
         }
         return $productsDD;

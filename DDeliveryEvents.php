@@ -197,14 +197,15 @@ class DDeliveryEvents
                 "GROUP" => "general",
             );
 
+            $articulDefault = null;
+
             $iblockProperty = array(0 => GetMessage('DDELIVERY_DEFAULT'));
             $res = CIBlockProperty::GetList(Array(), Array( "IBLOCK_ID"=>$catalog['OFFERS_IBLOCK_ID']));
             while($prop = $res->Fetch()){
-                /*if (defined('BX_UTF')) {
-                    $iblockProperty[$prop['ID']] = $APPLICATION->ConvertCharset($prop['NAME'], 'utf-8', 'cp1251');
-                }else{*/
-                    $iblockProperty[$prop['ID']] = $prop['NAME'];
-                //}
+                $iblockProperty[$prop['ID']] = $prop['NAME'];
+                if($prop['CODE'] == 'ARTNUMBER'){
+                    $articulDefault = $prop['ID'];
+                }
             }
 
 
@@ -217,6 +218,16 @@ class DDeliveryEvents
                     "VALUES" => $iblockProperty,
                 );
             }
+
+            $iblockProperty[0] = GetMessage('DDELIVERY_NONE');
+            $arConfig['CONFIG'][$key.'_ARTICUL'] = array(
+                "TYPE" => "DROPDOWN",
+                "TITLE" => GetMessage('DDELIVERY_ARTICUL'),
+                "GROUP" => "general",
+                "DEFAULT" => $articulDefault,
+                "VALUES" => $iblockProperty,
+            );
+
         }
 
 
