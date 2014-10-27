@@ -560,7 +560,7 @@ class DDeliveryEvents
 
         if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
-            return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду работать в админке');
+            return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_ADMIN_PAGE'));
         }
         if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
             $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
@@ -570,7 +570,7 @@ class DDeliveryEvents
             );
 
             if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
-                return array( "RESULT" => "ERROR", 'ERROR' => 'Я не буду работать в админке');
+                return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_ADMIN_PAGE'));
             }
 
             $ddOrderId = $arValue['VALUE'];
