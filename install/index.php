@@ -14,7 +14,7 @@ Class ddelivery_ddelivery extends CModule
     const MODULE_ID = "ddelivery.ddelivery";
     var $MODULE_ID = "ddelivery.ddelivery";
     public $MODULE_GROUP_RIGHTS = 'N';
-    public $NEED_MAIN_VERSION = '14.0.0';
+    public $NEED_MAIN_VERSION = '14.5.0';
     public $NEED_MODULES = array('catalog', 'sale');
 
     function GetMessage($name, $aReplace=false)
@@ -93,16 +93,21 @@ Class ddelivery_ddelivery extends CModule
         if (is_array($this->NEED_MODULES) && !empty($this->NEED_MODULES)) {
             foreach ($this->NEED_MODULES as $module) {
                 if (!IsModuleInstalled($module)) {
-                    $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => $module)));
+                    $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => $module, '#NEED#' => $this->NEED_MODULES)));
                     return;
+                }
+                include($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.$module.'/install/version.php');
+                if(!CheckVersion($arModuleVersion['VERSION'], $this->NEED_MAIN_VERSION)) {
+                    $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => $module, '#NEED#' => $this->NEED_MAIN_VERSION)));
                 }
             }
         }
+
         if(!function_exists('curl_init')) {
-            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => 'cURL')));
+            $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES_CURL', array('#MODULE#' => 'cURL')));
             return;
         }
-        if (strlen($this->NEED_MAIN_VERSION) <= 0 || version_compare(SM_VERSION, $this->NEED_MAIN_VERSION) >= 0) {
+        if (CheckVersion($this->NEED_MAIN_VERSION, SM_VERSION)) {
             RegisterModuleDependences('sale', 'onSaleDeliveryHandlersBuildList', self::MODULE_ID, 'DDeliveryEvents', 'Init');
             RegisterModuleDependences('sale', 'OnOrderNewSendEmail', self::MODULE_ID, 'DDeliveryEvents', 'OnOrderNewSendEmail');
             RegisterModuleDependences('sale', 'OnSaleBeforeStatusOrder', self::MODULE_ID, 'DDeliveryEvents', 'OnSaleBeforeStatusOrder');
