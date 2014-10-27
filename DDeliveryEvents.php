@@ -722,13 +722,18 @@ class DDeliveryEvents
         }
 
         $property = unserialize($orderDeliveryTableData['PARAMS']);
-        if(empty($property) || empty($property['DD_LOCAL_ID'])){
-            return true;
+        if(empty($property) || empty($property['DD_LOCAL_ID'])) {
+            $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $orderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
+            if(!$property) {
+                return true;
+            }else{
+                $ddLocalId = $property['VALUE'];
+            }
+        }else{
+            $ddLocalId = $property['DD_LOCAL_ID'];
         }
+
         global $APPLICATION;
-
-        $ddLocalId = $property['DD_LOCAL_ID'];
-
 
         try{
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
@@ -762,7 +767,7 @@ class DDeliveryEvents
             CSaleOrder::Update($orderId, array("TRACKING_NUMBER" => $ddeliveryOrderID));
             return true;
         }  catch(\DDelivery\DDeliveryException $e)  {
-            $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_EXCEPTION', array('%1' => $e->getMessage())));
+            $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_EXCEPTION', array('%1' => $APPLICATION->ConvertCharset($e->getMessage(), 'UTF-8', SITE_CHARSET))));
             return false;
         }
 
