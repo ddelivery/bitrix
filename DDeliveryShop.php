@@ -140,6 +140,9 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     protected function _getProductsFromCart()
     {
+        /**
+         * @var DDeliveryProduct[] $productsDD
+         */
         $productsDD = array();
         $iblockElIds = array();
 
@@ -152,14 +155,21 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             array('ID' => $iblockElIds),
             false,
             false,
-            array('ID', 'ELEMENT_IBLOCK_ID', 'WIDTH', 'HEIGHT', 'LENGTH', 'WEIGHT')
+            array('ID', 'NAME', 'ELEMENT_IBLOCK_ID', 'WIDTH', 'HEIGHT', 'LENGTH', 'WEIGHT')
         );
         $productList = array();
+
         while ($arProduct = $rsProducts->Fetch()){
             $productList[$arProduct['ID']] = $arProduct;
         }
 
         foreach($this->itemList as $item) {
+            foreach($productsDD as $curProduct) {
+                if($curProduct->getId() == $item['PRODUCT_ID']) {
+                    $curProduct->setQuantity($curProduct->getQuantity() + $item['QUANTITY']);
+                }
+            }
+
             $product = $productList[$item['PRODUCT_ID']];
             $iblock = $product['ELEMENT_IBLOCK_ID'];
 
