@@ -543,12 +543,28 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      * @return string[]
      */
     public function getClientAddress() {
+        //return array('1','2','3','4','5');
         $propCode = $this->config('PROP_ADDRESS');
-        $return = array(array());
+        $propCode2 = $this->config('PROP_CORP');
+        $propCode3 = $this->config('PROP_FLAT');
+        $propCode4 = $this->config('PROP_HOUSE');
+        $return = array();
         foreach($this->getOrderProps() as $prop){
             if($prop['CODE'] == $propCode && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
                 $return[0] = $this->formData['ORDER_PROP_'.$prop['ID']];
-                break;
+                //break;
+            }
+            if($prop['CODE'] == $propCode2 && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+                $return[1] = $this->formData['ORDER_PROP_'.$prop['ID']];
+                //break;
+            }
+            if($prop['CODE'] == $propCode3 && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+                $return[2] = $this->formData['ORDER_PROP_'.$prop['ID']];
+                //break;
+            }
+            if($prop['CODE'] == $propCode4 && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
+                $return[3] = $this->formData['ORDER_PROP_'.$prop['ID']];
+                //break;
             }
         }
 

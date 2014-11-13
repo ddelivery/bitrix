@@ -181,6 +181,27 @@ class DDeliveryEvents
                     "GROUP" => "general",
                     'POST_TEXT' => '',
                 ),
+                "PROP_CORP" => array(
+                    "TYPE"=>"DROPDOWN",
+                    "DEFAULT" => "CORP",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_CORP'),
+                    "GROUP" => "general",
+                    'POST_TEXT' => '',
+                ),
+                "PROP_FLAT" => array(
+                    "TYPE"=>"DROPDOWN",
+                    "DEFAULT" => "FLAT",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_FLAT'),
+                    "GROUP" => "general",
+                    'POST_TEXT' => '',
+                ),
+                "PROP_HOUSE" => array(
+                    "TYPE"=>"DROPDOWN",
+                    "DEFAULT" => "HOUSE",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_PROP_HOUSE'),
+                    "GROUP" => "general",
+                    'POST_TEXT' => '',
+                ),
 
             )
         );
@@ -420,6 +441,9 @@ class DDeliveryEvents
         $arConfig['CONFIG']['PROP_ADDRESS']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_ZIP_CODE']['VALUES'] = $props;
 
+        $arConfig['CONFIG']['PROP_CORP']['VALUES'] = $props;
+        $arConfig['CONFIG']['PROP_FLAT']['VALUES'] = $props;
+        $arConfig['CONFIG']['PROP_HOUSE']['VALUES'] = $props;
         return $arConfig;
     }
 

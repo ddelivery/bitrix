@@ -50,6 +50,9 @@ $MESS["DDELIVERY_CONFIG_PROP_FIO"] = "Свойство Ф.И.О.";
 $MESS["DDELIVERY_CONFIG_PROP_PHONE"] = "Свойство телефон";
 $MESS["DDELIVERY_CONFIG_PROP_ADDRESS"] = "Свойство адрес";
 $MESS["DDELIVERY_CONFIG_PROP_ZIP_CODE"] = "Свойство индекс";
+$MESS["DDELIVERY_CONFIG_PROP_HOUSE"] = "Свойство дом" ;
+$MESS["DDELIVERY_CONFIG_PROP_FLAT"] = "Свойство квартира";
+$MESS["DDELIVERY_CONFIG_PROP_CORP"] = "Свойство корпус";
 
 $MESS["DDELIVERY_CUSTOM_FIELDS"] = 'Соответствие полей для инфоблока "#IBLOCK_NAME#"';
 
