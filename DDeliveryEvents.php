@@ -587,6 +587,7 @@ class DDeliveryEvents
     /* */
     static function Calculate($profile, $arConfig, $arOrder = false, $STEP= false, $TEMP = false)
     {
+        global $APPLICATION;
         $itemList = array();
         if(!empty($arOrder)
             && !empty($arOrder['ITEMS'][0]['PRODUCT_ID'])
@@ -599,20 +600,35 @@ class DDeliveryEvents
 
         if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
-            return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_ADMIN_PAGE'));
+            return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ADMIN_PAGE'));
         }
+
+
         if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
             $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
-            $dbPropsValue = CSaleOrderPropsValue::GetList(
-                array(),
-                array("ORDER_ID" => $cmsOrderId, 'CODE'=>'DDELIVERY_ID')
-            );
 
-            if (!($arValue = $dbPropsValue->Fetch()) || empty($arValue['VALUE'])) {
-                return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_ADMIN_PAGE'));
+            $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $cmsOrderId)))->fetch();
+            if(empty($orderDeliveryTableData)) {
+                return true;
             }
 
-            $ddOrderId = $arValue['VALUE'];
+            $property = unserialize($orderDeliveryTableData['PARAMS']);
+            $ddOrderId = false;
+            if(empty($property) || empty($property['DD_LOCAL_ID'])) {
+                $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $cmsOrderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
+                if(!$property) {
+                    return true;
+                }else{
+                    $ddOrderId = $property['VALUE'];
+                }
+            }else{
+                $ddOrderId = $property['DD_LOCAL_ID'];
+            }
+            if (!$ddOrderId) {
+                $APPLICATION->ThrowException(GetMessage('DDELIVERY_ADMIN_PAGE'));
+                return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ADMIN_PAGE'));
+            }
+
             $dbBasketItems = CSaleBasket::GetList(Array("ID"=>"ASC"), Array("ORDER_ID"=>$cmsOrderId));
             $itemList = array();
             while($arBasket = $dbBasketItems->Fetch()) {
@@ -646,7 +662,7 @@ class DDeliveryEvents
                 //END TODO
             }
             if(empty($itemList)){
-                return array( "RESULT" => "ERROR", 'ERROR' => GetMessage('DDELIVERY_BASKET_EMPTY'));
+                return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_BASKET_EMPTY'));
             }
 
             $IntegratorShop = self::getShopObject($arConfig, $itemList, array());
@@ -660,7 +676,7 @@ class DDeliveryEvents
                 $price = $ddeliveryUI->getClientPrice($order->getPoint(), $order) ;
                 return array("RESULT" => "OK", 'VALUE'=>(float)$price);
             }else{
-                return array( "RESULT" => "ERROR", 'ERROR' => 'Not Find order');
+                return array( "RESULT" => "ERROR", 'TEXT' => 'Not Find order');
             }
         }
         return array(
