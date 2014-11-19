@@ -90,6 +90,12 @@ class DDeliveryEvents
             $sendStatusValues[$arResult['ID']] = $arResult['NAME'];
         }
 
+        $paymentTypes = array();
+        $dbPtype = CSalePaySystem::GetList($arOrder = Array("SORT"=>"ASC", "PSA_NAME"=>"ASC"), Array( "ACTIVE"=>"Y"));
+        while ($pType = $dbPtype->Fetch()) {
+            $paymentTypes[$pType['ID']] = $pType['NAME'].' ('.$pType['LID'].')';
+        }
+
         $jsHack = '<script>
             BX.ready(function() {
                 var el = BX("bxlhe_frame_hndl_dscr_all");
@@ -138,6 +144,15 @@ class DDeliveryEvents
                     'POST_TEXT' => GetMessage('DDELIVERY_CONFIG_DECLARED_PERCENT_POST_TEXT'),
                     "GROUP" => "general",
                     'CHECK_FORMAT' => 'NUMBER',
+                ),
+
+                "POST_PAYMENT"=>array(
+                    "TYPE" => "MULTISELECT",
+                    "DEFAULT" => "",
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_POST_PAYMENT_TITLE'),
+                    'POST_TEXT' => '',
+                    'VALUES' => $paymentTypes,
+                    "GROUP" => "general",
                 ),
 
                 "SECTION_PROP" => array(
@@ -736,6 +751,7 @@ class DDeliveryEvents
      *
      * @param $orderId
      * @param $statusID
+     * @return bool
      * @throws Bitrix\Main\DB\Exception
      */
     static function OnSaleBeforeStatusOrder($orderId, $statusID)

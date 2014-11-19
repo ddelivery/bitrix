@@ -263,7 +263,7 @@ use DDelivery\Order\DDeliveryOrder;
             $this->saveFullOrder($order);
             $this->shop->setCmsOrderStatus($order->shopRefnum, $order->localStatus);
             return array('cms_order_id' => $order->shopRefnum, 'ddStatus' => $order->ddStatus,
-                         'localStatus' => $order->localStatus );
+                         'localStatus' => $order->localStatus, 'ddelivery_id' => $order->ddeliveryID  );
         }
 
         /**
@@ -396,8 +396,7 @@ use DDelivery\Order\DDeliveryOrder;
             $errors = array();
             $point = $order->getPoint();
 
-            if( $point == null )
-            {
+            if( $point == null ){
                 $errors[] = "Укажите пожалуйста точку";
             }
             if(!strlen( $order->getToName() ))
@@ -532,8 +531,6 @@ use DDelivery\Order\DDeliveryOrder;
             if( $enabled ){
                 if( !empty($city) && !empty($company) ){
                     $paymentPrice = $this->sdk->paymentPriceEnable( $city, $company );
-                    //print_r($paymentPrice);
-                    //return (int)false;
                     return $paymentPrice->success;
                 }else{
                     throw new DDeliveryException('Не хватает параметров для расчета НПП');
@@ -810,7 +807,7 @@ use DDelivery\Order\DDeliveryOrder;
             if( $pickup ){
                $price = $companyArray['total_price'];
             }else{
-               $price = $companyArray['delivery_price'];
+               $price = $companyArray['total_price'] - $companyArray['pickup_price'];;
             }
             return $price;
         }
@@ -831,7 +828,7 @@ use DDelivery\Order\DDeliveryOrder;
             if( $pickup ){
                 $price = $companyArray['total_price'];
             }else{
-                $price = $companyArray['delivery_price'];
+                $price = $companyArray['total_price'] - $companyArray['pickup_price'];
             }
             // интервалы
             $price = $this->shop->preDisplayPointCalc($price, $order->getAmount());
@@ -994,10 +991,10 @@ use DDelivery\Order\DDeliveryOrder;
             $sortElement = ( ( $pickup )?'total_price':'delivery_price' );
             if( $sortElement == 'delivery_price' ){
                 usort($resultCompanies, function($a, $b){
-                    if ($a['delivery_price'] == $b['delivery_price']) {
+                    if (($a['total_price'] - $a['pickup_price']) == ($b['total_price'] - $b['pickup_price'])) {
                         return 0;
                     }
-                    return ($a['delivery_price'] < $b['delivery_price']) ? -1 : 1;
+                    return ( ($a['total_price'] - $a['pickup_price']) < ($b['total_price'] - $b['pickup_price'])) ? -1 : 1;
                 });
             }else{
                 usort($resultCompanies, function($a, $b){
@@ -1515,6 +1512,7 @@ use DDelivery\Order\DDeliveryOrder;
                             'orderId' => $this->order->localId,
                             'clientPrice'=>$this->getClientPrice($point, $this->order, $this->order->type),
                             'userInfo' => $this->getDDUserInfo($this->order),
+                            'payment'  => $this->getAvailablePaymentVariants($this->order)
                             );
             $returnArray = $this->shop->onFinishResultReturn( $this->order, $returnArray );
             return json_encode( $returnArray );
@@ -1753,54 +1751,11 @@ use DDelivery\Order\DDeliveryOrder;
          */
         static public function getCompanySubInfo(){
             // pack забита для тех у кого нет иконки
-            return array(
-                1 => array('name' => 'PickPoint', 'ico' => 'pickpoint'),
-                3 => array('name' => 'Logibox', 'ico' => 'logibox'),
-                4 => array('name' => 'Boxberry', 'ico' => 'boxberry'),
-                6 => array('name' => 'СДЭК забор', 'ico' => 'cdek'),
-                7 => array('name' => 'QIWI Post', 'ico' => 'qiwi'),
-                11 => array('name' => 'Hermes', 'ico' => 'hermes'),
-                13 => array('name' => 'КТС', 'ico' => 'pack'),
-                14 => array('name' => 'Maxima Express', 'ico' => 'pack'),
-                16 => array('name' => 'IMLogistics Пушкинская', 'ico' => 'imlogistics'),
-                17 => array('name' => 'IMLogistics', 'ico' => 'imlogistics'),
-                18 => array('name' => 'Сам Заберу', 'ico' => 'pack'),
-                20 => array('name' => 'DPD Parcel', 'ico' => 'dpd'),
-                21 => array('name' => 'Boxberry Express', 'ico' => 'boxberry'),
-                22 => array('name' => 'IMLogistics Экспресс', 'ico' => 'imlogistics'),
-                23 => array('name' => 'DPD Consumer', 'ico' => 'dpd'),
-                24 => array('name' => 'Сити Курьер', 'ico' => 'pack'),
-                25 => array('name' => 'СДЭК Посылка Самовывоз', 'ico' => 'cdek'),
-                26 => array('name' => 'СДЭК Посылка до двери', 'ico' => 'cdek'),
-                27 => array('name' => 'DPD ECONOMY', 'ico' => 'dpd'),
-                28 => array('name' => 'DPD Express', 'ico' => 'dpd'),
-                29 => array('name' => 'DPD Classic', 'ico' => 'dpd'),
-                30 => array('name' => 'EMS', 'ico' => 'ems'),
-                31 => array('name' => 'Grastin', 'ico' => 'grastin'),
-                33 => array('name' => 'Aplix', 'ico' => 'aplix'),
-                35 => array('name' => 'Aplix DPD Consumer', 'ico' => 'aplix_dpd_black'),
-                36 => array('name' => 'Aplix DPD parcel', 'ico' => 'aplix_dpd_black'),
-                37 => array('name' => 'Aplix IML самовывоз', 'ico' => 'aplix_imlogistics'),
-                38 => array('name' => 'Aplix PickPoint', 'ico' => 'aplix_pickpoint'),
-                39 => array('name' => 'Aplix Qiwi', 'ico' => 'aplix_qiwi'),
-                40 => array('name' => 'Aplix СДЭК', 'ico' => 'aplix_cdek'),
-                41 => array('name' => 'Кит', 'ico' => 'kit'),
-                42 => array('name' => 'Imlogistics', 'ico' => 'imlogistics'),
-                43 => array('name' => 'Imlogistics', 'ico' => 'imlogistics'),
-                44 => array('name' => 'Почта России', 'ico' => 'russianpost'),
-                45 => array('name' => 'Aplix курьерская доставка', 'ico' => 'aplix'),
-                48 => array('name' => 'Aplix IML курьерская доставка', 'ico' => 'aplix_imlogistics'),
-                49 => array('name' => 'IML Забор', 'ico' => 'imlogistics'),
-                50 => array('name' => 'Почта России 1-й класс', 'ico' => 'mail'),
-                51 => array('name' => 'EMS Почта России', 'ico' => 'ems'),
-
-                52 => array('name' => 'ЕКБ-доставка забор', 'ico' => 'pack'),
-                53 => array('name' => 'ЕКБ-доставка курьер', 'ico' => 'pack'),
-                54 => array('name' => 'Почта России 1-й класс.', 'ico' => 'mail'),
-                55 => array('name' => 'Почта России.', 'ico' => 'mail')
-
-            );
+            return Utils::getCompanySubInfo();
         }
+
+
+
 
         /**
          *
@@ -1810,8 +1765,7 @@ use DDelivery\Order\DDeliveryOrder;
          * @param DDeliveryOrder $currentOrder
          * @param \stdClass $item
          */
-        public function _initOrderInfo($currentOrder, $item)
-        {
+        public function _initOrderInfo($currentOrder, $item){
             $currentOrder->type = $item->type;
             $currentOrder->paymentVariant = $item->payment_variant;
             $currentOrder->localId = $item->id;
@@ -1854,8 +1808,7 @@ use DDelivery\Order\DDeliveryOrder;
          * Удалить все заказы
          * @return bool
          */
-        public function deleteAllOrders()
-        {
+        public function deleteAllOrders(){
             $orderDB = new DataBase\Order($this->pdo, $this->pdoTablePrefix);
             return $orderDB->cleanOrders();
         }
@@ -1867,8 +1820,7 @@ use DDelivery\Order\DDeliveryOrder;
          *
          * @return string
          */
-        public function getDDStatusDescription( $ddStatus )
-        {
+        public function getDDStatusDescription( $ddStatus ){
            $statusProvider = new DDStatusProvider();
            return $statusProvider->getOrderDescription( $ddStatus );
         }
@@ -1915,7 +1867,7 @@ use DDelivery\Order\DDeliveryOrder;
                 $comment = 'Самовывоз, ' . $order->cityName . ' ' . $point['address'] .
                     (', ' . $point['delivery_company_name']) .
                     (', ' . $point['name'] . ', ID точки - ' . $point['_id'] ) .
-                    (', ' . (($point['type'] == 1)?'Постомат':'ПВЗ'));
+                    (', ' . (($point['type'] == 1)?'Постамат':'ПВЗ'));
             }else if( $order->type == DDeliverySDK::TYPE_COURIER ){
                 $comment = 'Доставка курьером по адресу ' . $order->getFullAddress() .
                     (', ' . $point['delivery_company_name']) ;
@@ -1924,4 +1876,24 @@ use DDelivery\Order\DDeliveryOrder;
         }
 
 
+        /**
+         * Получить список заказов по массиву из ID
+         *
+         * @param $ids
+         * @return DDeliveryOrder[]
+         */
+        public function getOrderList($ids){
+            $orderDB = new DataBase\Order($this->pdo, $this->pdoTablePrefix);
+            $orders = $orderDB->getOrderList($ids);
+            $orderList = array();
+            if( count($orders) ) {
+                foreach( $orders as &$item ){
+                    $productList = unserialize($item->cart);
+                    $currentOrder = new DDeliveryOrder($productList);
+                    $this->_initOrderInfo($currentOrder, $item);
+                    $orderList[] = $currentOrder;
+                }
+            }
+            return $orderList;
+        }
     }

@@ -27,6 +27,7 @@ $MESS["DDELIVERY_CONFIG_MODE_POST_TEXT"] = "Для отладки работы модуля, используй
 
 $MESS["DDELIVERY_CONFIG_DECLARED_PERCENT_TITLE"] = "Какой % от стоимости товара страхуется";
 $MESS["DDELIVERY_CONFIG_DECLARED_PERCENT_POST_TEXT"] = 'Вы можете снизить оценочную стоимость для уменьшения стоимости доставки за счет снижения размера страховки.';
+$MESS["DDELIVERY_CONFIG_POST_PAYMENT_TITLE"] = 'Платёжная система наложеный платеж';
 $MESS["DDELIVERY_CONFIG_SECTION_PROP_TITLE"] = 'Соответствие полей (Выберите поля, соответствующее полям в вашей системе)';
 $MESS["DDELIVERY_CONFIG_SEND_STATUS_TITLE"] = 'Статус для отправки';
 $MESS["DDELIVERY_CONFIG_SEND_STATUS_POST_TEXT"] = '<br>Статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>

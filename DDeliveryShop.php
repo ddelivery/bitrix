@@ -6,6 +6,7 @@
  * @var CMain $APPLICATION
  */
 use Bitrix\Main\Config\Configuration;
+use DDelivery\Order\DDeliveryOrder;
 use DDelivery\Order\DDeliveryProduct;
 
 class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
@@ -95,7 +96,17 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         if(isset($this->config[$key])){
             if(isset($this->config[$key]['VALUE'])) {
-                return $this->config[$key]['VALUE'];
+                $value = $this->config[$key]['VALUE'];
+                if(is_array($value)) {
+                    // Удаляем пустые значения
+                    foreach($value as $k => $v) {
+                        if(!$v){
+                            unset($value[$k]);
+                        }
+                    }
+                    $value = array_values($value);
+                }
+                return $value;
             }elseif(isset($this->config[$key]['DEFAULT'])) {
                 return isset($this->config[$key]['DEFAULT']);
             }
@@ -365,31 +376,31 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Курьер
+     * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Самовывоз
+     * @param $order DDeliveryOrder
      * @return int
      */
     public function filterPointByPaymentTypeCourier( $order )
     {
-        return self::PAYMENT_POST_PAYMENT;
-        // выбираем один из 3 вариантов(см документацию или комменты к констатам)
-        return self::PAYMENT_POST_PAYMENT;
+        $postPaymentTypes = $this->config('POST_PAYMENT');
+        if(in_array($order->paymentVariant, $postPaymentTypes)) {
+            return self::PAYMENT_POST_PAYMENT;
+        }
         return self::PAYMENT_PREPAYMENT;
-        return self::PAYMENT_NOT_CARE;
-        // TODO: Implement filterPointByPaymentTypeCourier() method.
     }
 
     /**
      * Возвращаем способ оплаты константой PluginFilters::PAYMENT_, предоплата или оплата на месте. Самовывоз
+     * @param $order DDeliveryOrder
      * @return int
      */
     public function filterPointByPaymentTypeSelf( $order )
     {
-        return self::PAYMENT_POST_PAYMENT;
-        // выбираем один из 3 вариантов(см документацию или комменты к констатам)
-        return self::PAYMENT_POST_PAYMENT;
+        $postPaymentTypes = $this->config('POST_PAYMENT');
+        if(in_array($order->paymentVariant, $postPaymentTypes)) {
+            return self::PAYMENT_POST_PAYMENT;
+        }
         return self::PAYMENT_PREPAYMENT;
-        return self::PAYMENT_NOT_CARE;
-        // TODO: Implement filterPointByPaymentTypeSelf() method.
     }
 
     /**
