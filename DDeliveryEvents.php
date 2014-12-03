@@ -454,8 +454,9 @@ class DDeliveryEvents
         $arConfig['CONFIG']['PROP_FIO']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_PHONE']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_ADDRESS']['VALUES'] = $props;
-        $arConfig['CONFIG']['PROP_ZIP_CODE']['VALUES'] = $props;
+        $props = array_merge(array(GetMessage('DDELIVERY_CONFIG_EMPTY')), $props);
 
+        $arConfig['CONFIG']['PROP_ZIP_CODE']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_CORP']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_FLAT']['VALUES'] = $props;
         $arConfig['CONFIG']['PROP_HOUSE']['VALUES'] = $props;
@@ -609,7 +610,7 @@ class DDeliveryEvents
 
             $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $cmsOrderId)))->fetch();
             if(empty($orderDeliveryTableData)) {
-                return true;
+                return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ERROR_ORDER'));
             }
 
             $property = unserialize($orderDeliveryTableData['PARAMS']);
@@ -617,7 +618,7 @@ class DDeliveryEvents
             if(empty($property) || empty($property['DD_LOCAL_ID'])) {
                 $property = CSaleOrderPropsValue::GetList(array(), array("ORDER_ID" => $cmsOrderId, 'CODE' => 'DDELIVERY_ID'))->Fetch();
                 if(!$property) {
-                    return true;
+                    return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ERROR_ORDER'));
                 }else{
                     $ddOrderId = $property['VALUE'];
                 }

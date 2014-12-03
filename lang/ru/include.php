@@ -12,6 +12,7 @@ $MESS["DDELIVERY_PROFILE_DESCRIPTION"] = "Выберите удобную для вас точку на карт
 $MESS['DDELIVERY_SELECT'] = "Выбрать";
 $MESS['DDELIVERY_BASKET_EMPTY'] = 'Корзина в сейсии пуста';
 $MESS['DDELIVERY_ADMIN_PAGE'] = 'Модуль DDelivery не может посчитать стоимость в админке.';
+$MESS['DDELIVERY_ERROR_ORDER'] = 'Заказ поврежден или не является относящимся к DDelivery';
 
 $MESS["DDELIVERY_CONFIG_GROUPS_GENERAL"] = "Основные";
 $MESS["DDELIVERY_CONFIG_GROUPS_TYPE"] = "Способы доставки";
@@ -54,6 +55,7 @@ $MESS["DDELIVERY_CONFIG_PROP_ZIP_CODE"] = "Свойство индекс";
 $MESS["DDELIVERY_CONFIG_PROP_HOUSE"] = "Свойство дом" ;
 $MESS["DDELIVERY_CONFIG_PROP_FLAT"] = "Свойство квартира";
 $MESS["DDELIVERY_CONFIG_PROP_CORP"] = "Свойство корпус";
+$MESS["DDELIVERY_CONFIG_EMPTY"] = "Значение не выбрано";
 
 $MESS["DDELIVERY_CUSTOM_FIELDS"] = 'Соответствие полей для инфоблока "#IBLOCK_NAME#"';
 

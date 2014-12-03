@@ -11,7 +11,7 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
     if(topWindow != window){
         var DDeliveryIntegration = {getStatus: function(){
             if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
-                return 'Выберите условия доставки';
+                return '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u0441\u043b\u043e\u0432\u0438\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438';
             }else{
                 DDeliveryIntegration = topWindow.DDeliveryIntegration;
                 return DDeliveryIntegration.getStatus();
@@ -31,7 +31,7 @@ if(typeof(topWindow.DDeliveryIntegration) == 'undefined') {
     }else{
         topWindow.DDeliveryIntegration = (function(){
             var th = {};
-            var status = 'Выберите условия доставки';
+            var status = '\u0412\u044b\u0431\u0435\u0440\u0438\u0442\u0435 \u0443\u0441\u043b\u043e\u0432\u0438\u044f \u0434\u043e\u0441\u0442\u0430\u0432\u043a\u0438';
             th.getStatus = function(){
                 return status;
             };
