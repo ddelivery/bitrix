@@ -29,6 +29,10 @@ $MESS["DDELIVERY_CONFIG_MODE_POST_TEXT"] = "Для отладки работы модуля, используй
 $MESS["DDELIVERY_CONFIG_DECLARED_PERCENT_TITLE"] = "Какой % от стоимости товара страхуется";
 $MESS["DDELIVERY_CONFIG_DECLARED_PERCENT_POST_TEXT"] = 'Вы можете снизить оценочную стоимость для уменьшения стоимости доставки за счет снижения размера страховки.';
 $MESS["DDELIVERY_CONFIG_POST_PAYMENT_TITLE"] = 'Платёжная система наложеный платеж';
+$MESS["DDELIVERY_CONFIG_TEMPLATE_TITLE"] = 'Цветовая схема';
+$MESS["DDELIVERY_CONFIG_TEMPLATE_DEFAULT"] = 'Фиолетовая';
+$MESS["DDELIVERY_CONFIG_TEMPLATE_BLUE"] = 'Синяя';
+
 $MESS["DDELIVERY_CONFIG_SECTION_PROP_TITLE"] = 'Соответствие полей (Выберите поля, соответствующее полям в вашей системе)';
 $MESS["DDELIVERY_CONFIG_SEND_STATUS_TITLE"] = 'Статус для отправки';
 $MESS["DDELIVERY_CONFIG_SEND_STATUS_POST_TEXT"] = '<br>Статус, при котором заявки из вашей системы будут уходить в DDelivery.<br>
@@ -92,7 +96,7 @@ $MESS["DDELIVERY_STEP"] = 'шаг';
 $MESS["DDELIVERY_PAY_PICKUP"] = 'Выводить стоимость забора в цене доставки';
 $MESS["DDELIVERY_ABOUT_SELF"] = 'Самовывоз, %1 %2, %3, %4, ID точки - %4, %5';
 $MESS["DDELIVERY_ABOUT_COURIER"] = 'Доставка курьером по адресу %1, %2';
-//$MESS["DDELIVERY_ABOUT_EDIT"] = 'Редактировать';
+$MESS["DDELIVERY_ABOUT_EDIT"] = 'Редактировать';
 $MESS["DDELIVERY_ABOUT_DELIVERY"] = 'Доставка по адресу';
 
 $MESS['DDELIVERY_SAVE_STATUS_ERROR_ORDER_NOT_LOAD'] = 'Ошибка целостности заказа, доставка невозможна';

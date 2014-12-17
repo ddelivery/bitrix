@@ -29,7 +29,7 @@ abstract class DShopAdapter{
      */
     const CACHING_TYPE_INDIVIDUAL = 'individual';
 
-    const SDK_VERSION = '2.1.8.5';
+    const SDK_VERSION = '2.3';
     /**
      * Имя редактируется
      */
@@ -146,6 +146,14 @@ abstract class DShopAdapter{
                                         DDStatusProvider::ORDER_WAITING => 'Ожидание',
                                         DDStatusProvider::ORDER_CANCEL => 'Отмена' );
 
+
+    /**
+     * Получить массив с соответствие статусов DDelivery
+     * @return array
+     */
+    public abstract  function getCmsOrderStatusList();
+
+
     /**
      * Настройки базы данных
      * @return array
@@ -201,14 +209,21 @@ abstract class DShopAdapter{
         return DShopAdapter::CACHING_TYPE_INDIVIDUAL;
     }
 
+
+    /**
+     * Получить папку для php шаблона для сдк
+     *
+     * @return string
+     */
+    public abstract function getTemplateScript();
+
+
     /**
      * Получить название шаблона для сдк ( разные цветовые схемы )
      *
      * @return string
      */
-    public function getTemplate(){
-        return 'default';
-    }
+    public abstract  function getTemplate();
     /**
      * Возвращаем сервер для логгирования ошибок
      */

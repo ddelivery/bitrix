@@ -67,7 +67,40 @@ abstract class PluginFilters extends DShopAdapter
      */
     const AROUND_CEIL = 3;
 
+    public function getCmsOrderStatusList(){
+           return array(
+                        DDStatusProvider::ORDER_IN_PROGRESS => 'В обработке',
+                        DDStatusProvider::ORDER_CONFIRMED => 'Подтверждена',
+                        DDStatusProvider::ORDER_IN_STOCK => 'На складе ИМ',
+                        DDStatusProvider::ORDER_IN_WAY => 'Заказ в пути',
+                        DDStatusProvider::ORDER_DELIVERED => 'Заказ доставлен',
+                        DDStatusProvider::ORDER_RECEIVED => 'Заказ получен',
+                        DDStatusProvider::ORDER_RETURN => 'Возврат заказа',
+                        DDStatusProvider::ORDER_CUSTOMER_RETURNED => 'Клиент вернул заказ',
+                        DDStatusProvider::ORDER_PARTIAL_REFUND => 'Частичный возврат заказа',
+                        DDStatusProvider::ORDER_RETURNED_MI => 'Возвращен в ИМ',
+                        DDStatusProvider::ORDER_WAITING => 'Ожидание',
+                        DDStatusProvider::ORDER_CANCEL => 'Отмена'
+           );
+    }
+    /**
+     * Получить папку для php шаблона для сдк
+     *
+     * @return string
+     */
+    public function getTemplateScript(){
+        return __DIR__ . '/../../../templates/default/';
+    }
 
+
+    /**
+     * Получить название шаблона для сдк ( разные цветовые схемы )
+     *
+     * @return string
+     */
+    public function getTemplate(){
+        return 'default';
+    }
     public  function  getErrorMsg( \Exception $e, $extraParams = array() ){
         return $e->getMessage();
     }
@@ -188,7 +221,7 @@ abstract class PluginFilters extends DShopAdapter
      */
     public function getDeclaredPrice($order)
     {
-        return ($order->amount / 100) * $this->getDeclaredPercent();
+        return ($order->getAmount() / 100) * $this->getDeclaredPercent();
     }
 
     /**

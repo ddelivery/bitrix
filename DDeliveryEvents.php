@@ -154,6 +154,16 @@ class DDeliveryEvents
                     'VALUES' => $paymentTypes,
                     "GROUP" => "general",
                 ),
+                "TEMPLATE"=> array(
+                    "TYPE" => "DROPDOWN",
+                    "DEFAULT" => 'default',
+                    "TITLE" => GetMessage('DDELIVERY_CONFIG_TEMPLATE_TITLE'),
+                    "VALUES" => array(
+                        'default' => GetMessage('DDELIVERY_CONFIG_TEMPLATE_DEFAULT'),
+                        'blue' => GetMessage('DDELIVERY_CONFIG_TEMPLATE_BLUE'),
+                    ),
+                    "GROUP" => "general",
+                ),
 
                 "SECTION_PROP" => array(
                     'TYPE' => 'SECTION',
@@ -472,8 +482,8 @@ class DDeliveryEvents
             return;
         return array(
             'DD_ABOUT' => array(
-                //'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
-                'TITLE' => GetMessage('DDELIVERY_ABOUT_DELIVERY'),
+                'TITLE' => '<a href="/bitrix/admin/ddelivery.ddelivery_change_point.php?order_id='.$arOrder['ID'].'">'.GetMessage('DDELIVERY_ABOUT_EDIT').'</a>',
+                //'TITLE' => GetMessage('DDELIVERY_ABOUT_DELIVERY'),
             ),
         );
     }
@@ -645,7 +655,7 @@ class DDeliveryEvents
 
         if(!empty($ddOrderId))
         {
-            if(!empty($itemList)){
+            if(empty($itemList)){
                 // TODO
                 $dbBasketItems = CSaleBasket::GetList(
                     array("ID" => "ASC"),

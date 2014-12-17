@@ -5,6 +5,10 @@ define("STOP_STATISTICS", true);
 
 require_once($_SERVER["DOCUMENT_ROOT"]."/bitrix/modules/main/include/prolog_before.php");
 
+$saleModulePermissions = $APPLICATION->GetGroupRight("sale");
+if ($saleModulePermissions == "D")
+    $APPLICATION->AuthForm(GetMessage("ACCESS_DENIED"));
+
 header('Content-Type: text/html; charset=utf-8');
 
 CModule::IncludeModule("sale");
@@ -31,14 +35,14 @@ while($arBasket = $dbBasketItems->Fetch()) {
 }
 
 $IntegratorShop = new DDeliveryAdminShop($ddeliveryConfig['CONFIG']['CONFIG'], $itemList, $formData);
-
 try{
     $ddeliveryUI = new DdeliveryUI($IntegratorShop);
+    $order = $ddeliveryUI->initOrder($_REQUEST['order_id']);
     // В зависимости от параметров может выводить полноценный html или json
     $ddeliveryUI->render(isset($_REQUEST) ? $_REQUEST : array());
 }catch (Exception $e){
-    //var_dump($e);
-    throw $e;
+    echo $e->getMessage();
+    //throw $e;
 }
 
 

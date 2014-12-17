@@ -56,6 +56,7 @@ Map = (function () {
                         th.render();
                         th.event();
                     });
+
             });
 
             // Инпут поиска
@@ -72,6 +73,7 @@ Map = (function () {
             // Область видимости геообъекта.
             var bounds = renderGeoObject.properties.get('boundedBy');
             // Получаем где отрисовать карту
+
             var centerAndZoom = ymaps.util.bounds.getCenterAndZoom(bounds, [mapObject.width(), mapObject.height()]);
 
             yamap = new ymaps.Map(mapObject[0], {
@@ -291,7 +293,7 @@ Map = (function () {
                 if(typeof(params) != 'undefined' && typeof(params.displayContactForm) == 'boolean' && !params.displayContactForm){
                     return;
                 }
-                DDeliveryIframe.ajaxPage({action:'contactForm', point: current_point._id, type:1, custom: current_point.is_custom ? 1 : ''});
+                DDeliveryIframe.ajaxPage({action:'contactForm', pointID: current_point._id, type:1, custom: current_point.is_custom ? 1 : ''});
             });
 
             $(window).on('ddeliveryCityPlace', function (e, city) {
@@ -313,7 +315,7 @@ Map = (function () {
             $('.delivery-type__drop ul').hide();
             $('.map-popup .delivery-type__drop p.loader_center').show();
 
-            DDeliveryIframe.ajaxData({action: 'mapDataOnly', city_id: cityId, city_alias:cityFullName}, function (data) {
+            DDeliveryIframe.ajaxData({action: 'mapDataOnly', city: cityId, cityName: cityFullName, pointID:0}, function (data) {
                 Map.renderData(data);
             });
 

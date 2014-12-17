@@ -108,7 +108,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
                 }
                 return $value;
             }elseif(isset($this->config[$key]['DEFAULT'])) {
-                return isset($this->config[$key]['DEFAULT']);
+                return $this->config[$key]['DEFAULT'];
             }
         }
         return  null;
@@ -231,6 +231,11 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         return $productsDD;
     }
 
+    public function getTemplate()
+    {
+        return $this->config('TEMPLATE');
+    }
+
     public function getDemoCardData()
     {
         return array();
@@ -304,7 +309,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
      */
     public function getDeclaredPercent()
     {
-        return $this->config('DECLARED_PERCENT');
+        return (float)$this->config('DECLARED_PERCENT');
     }
 
     /**
