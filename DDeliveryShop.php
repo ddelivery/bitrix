@@ -561,9 +561,9 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     public function getClientAddress() {
         //return array('1','2','3','4','5');
         $propCode = $this->config('PROP_ADDRESS');
-        $propCode2 = $this->config('PROP_CORP');
-        $propCode3 = $this->config('PROP_FLAT');
-        $propCode4 = $this->config('PROP_HOUSE');
+        $propCode2 = $this->config('PROP_HOUSE');
+        $propCode3 = $this->config('PROP_CORP');
+        $propCode4 = $this->config('PROP_FLAT');
         $return = array();
         foreach($this->getOrderProps() as $prop){
             if($prop['CODE'] == $propCode && !empty($this->formData['ORDER_PROP_'.$prop['ID']])) {
