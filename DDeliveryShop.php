@@ -146,10 +146,12 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     }
 
     /**
-     * Возвращает товары находящиеся в корзине пользователя, будет вызван один раз, затем закеширован
-     * @return DDeliveryProduct[]
+     * Функционал _getProductsFromCart
+     * Мне эта функция снаружи нужна
+     * @param $itemList
+     * @return \DDelivery\Order\DDeliveryProduct[]
      */
-    protected function _getProductsFromCart()
+    public function itemListToDDCart($itemList)
     {
         /**
          * @var DDeliveryProduct[] $productsDD
@@ -157,7 +159,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
         $productsDD = array();
         $iblockElIds = array();
 
-        foreach($this->itemList as $item) {
+        foreach($itemList as $item) {
             $iblockElIds[] = $item['PRODUCT_ID'];
         }
 
@@ -174,7 +176,7 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             $productList[$arProduct['ID']] = $arProduct;
         }
 
-        foreach($this->itemList as $item) {
+        foreach($itemList as $item) {
             foreach($productsDD as $curProduct) {
                 if($curProduct->getId() == $item['PRODUCT_ID']) {
                     $curProduct->setQuantity($curProduct->getQuantity() + $item['QUANTITY']);
@@ -229,6 +231,15 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
             );
         }
         return $productsDD;
+    }
+
+    /**
+     * Возвращает товары находящиеся в корзине пользователя, будет вызван один раз, затем закеширован
+     * @return DDeliveryProduct[]
+     */
+    protected function _getProductsFromCart()
+    {
+        return $this->itemListToDDCart($this->itemList);
     }
 
     public function getTemplate()
@@ -606,13 +617,21 @@ class DDeliveryShop extends \DDelivery\Adapter\PluginFilters
     {
         $return = false;
         foreach($this->getOrderProps() as $prop){
-            if($prop['IS_LOCATION'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID'].'_val'])) {
+            if($prop['IS_LOCATION'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID']])){
+                global $APPLICATION;
+                $CSaleLocation = new CSaleLocation();
+                $cityBxData = $CSaleLocation->GetByID($this->formData['ORDER_PROP_'.$prop['ID']], 'ru');
+                if($cityBxData) {
+                    $cityBxData = $APPLICATION->ConvertCharsetArray($cityBxData, SITE_CHARSET, 'UTF-8');
+                    $return = trim($cityBxData['CITY_NAME_LANG'], "\t\n\r\0\x0B ,");
+                }
+            }elseif($prop['IS_LOCATION'] == 'Y' && !empty($this->formData['ORDER_PROP_'.$prop['ID'].'_val'])) {
                 $return = strtolower($this->formData['ORDER_PROP_'.$prop['ID'].'_val']);
-                $return = explode(',', trim(str_replace('Россия', '', $return), "\t\n\r\0\x0B ,"));
+                list($return) = explode(',', trim(str_replace('Россия', '', $return), "\t\n\r\0\x0B ,"));
             }
         }
         if($return) {
-            $cityRes = $this->ddeliveryUI->sdk->getAutoCompleteCity($return[0]);
+            $cityRes = $this->ddeliveryUI->sdk->getAutoCompleteCity($return);
             if($cityRes && !empty($cityRes->response)) {
                 return $cityRes->response[0]['_id'];
             }

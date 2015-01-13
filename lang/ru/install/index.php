@@ -7,4 +7,3 @@ $MESS ['DDELIVERY_MOD_INST_OK'] = 'Настроить и активировать модуль вы можете <a 
 $MESS ['DDELIVERY_NEED_RIGHT_VER'] = "Для установки данного решения необходима версия главного модуля #NEED# или выше.";
 $MESS ['DDELIVERY_NEED_MODULES'] = "Для установки данного решения необходимо наличие модуля #MODULE# версии не ниже #NEED#.";
 $MESS ['DDELIVERY_NEED_MODULES_CURL'] = 'Для установки данного решения необходимо наличие php библиотеки <a href="http://php.net/manual/ru/book.curl.php">cURL</a>.';
-?>

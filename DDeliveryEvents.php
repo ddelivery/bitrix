@@ -805,7 +805,7 @@ class DDeliveryEvents
         try{
             $DDConfig = CSaleDeliveryHandler::GetBySID('ddelivery')->Fetch();
             if($statusID != $DDConfig['CONFIG']['CONFIG']['SEND_STATUS']['VALUE']) {
-                return;
+                return true;
             }
             $cmsOrder = CSaleOrder::GetByID($orderId);
             if($cmsOrder['DELIVERY_ID'] != 'ddelivery:all')
@@ -814,6 +814,41 @@ class DDeliveryEvents
             $IntegratorShop = self::getShopObject($DDConfig['CONFIG']['CONFIG'], array(), array());
             $ddeliveryUI = new DdeliveryUI($IntegratorShop, true);
             $order = $ddeliveryUI->initOrder($ddLocalId);
+
+
+            $bxOrder = CSaleBasket::GetList(array(), array(
+                'ORDER_ID' => $orderId,
+                ),
+                false,
+                false,
+                array('PRODUCT_ID', 'PRICE', 'QUANTITY', 'NAME')
+            );
+            $bxItems = array();
+            while($bxItem = $bxOrder->Fetch()) {
+                $bxItems[] = $bxItem;
+            }
+
+            $order->setProducts($IntegratorShop->itemListToDDCart($bxItems));
+            $point = $order->getPoint();
+            $newPoint = false;
+            if( $order->type == DDeliverySDK::TYPE_SELF ){
+                $newPoint = $ddeliveryUI->calculateSelfPointPrice($order, $point['_id']);
+                $newPoint = isset($newPoint[0]) ? $newPoint[0] : false;
+            }else if( $order->type == DDeliverySDK::TYPE_COURIER ) {
+                $resultPoints = $ddeliveryUI->calculateCourierPrices($order);
+                foreach($resultPoints as $resultPoint) {
+                    if($resultPoint['delivery_company'] == $point['delivery_company']) {
+                        $newPoint = $resultPoint;
+                    }
+                }
+            }
+            if($newPoint) {
+                $order->setPoint($newPoint);
+            }else{
+                $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_ORDER_NOT_LOAD'));
+                return false;
+            }
+
             if(empty($order) || $order->ddeliveryID) {
                 $APPLICATION->ThrowException(GetMessage('DDELIVERY_SAVE_STATUS_ERROR_ORDER_NOT_LOAD'));
                 return false;

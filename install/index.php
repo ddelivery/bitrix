@@ -99,6 +99,7 @@ Class ddelivery_ddelivery extends CModule
                 include($_SERVER['DOCUMENT_ROOT'].'/bitrix/modules/'.$module.'/install/version.php');
                 if(!CheckVersion($arModuleVersion['VERSION'], $this->NEED_MAIN_VERSION)) {
                     $this->ShowForm('ERROR', $this->GetMessage('DDELIVERY_NEED_MODULES', array('#MODULE#' => $module, '#NEED#' => $this->NEED_MAIN_VERSION)));
+                    return;
                 }
             }
         }

@@ -100,6 +100,7 @@ $MESS["DDELIVERY_ABOUT_EDIT"] = 'Редактировать';
 $MESS["DDELIVERY_ABOUT_DELIVERY"] = 'Доставка по адресу';
 
 $MESS['DDELIVERY_SAVE_STATUS_ERROR_ORDER_NOT_LOAD'] = 'Ошибка целостности заказа, доставка невозможна';
+$MESS['DDELIVERY_SAVE_STATUS_ERROR_ORDER_OLD_POINT'] = 'Ошибка. Выбраная компания доставки или пункт самовывоза устарели.';
 $MESS['DDELIVERY_SAVE_STATUS_ERROR_NOT_SAVE'] = 'Не удалось соединиться с сервером DDelivery. Попробуйте позже.';
 $MESS['DDELIVERY_SAVE_STATUS_ERROR_EXCEPTION'] = 'Ошибка DDelivery: %1';
 
