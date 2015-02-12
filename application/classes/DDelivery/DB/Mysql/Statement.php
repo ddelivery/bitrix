@@ -52,6 +52,8 @@ class Statement extends \DDelivery\DB\Abstr\Statement {
      */
     public function fetch($fetchStyle = PDO::FETCH_BOTH)
     {
+        if(!$this->resource)
+            return false;
         switch($fetchStyle){
             case PDO::FETCH_ASSOC:
                 return mysql_fetch_array($this->resource, MYSQL_ASSOC);
