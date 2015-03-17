@@ -104,7 +104,7 @@ class RequestProvider
 	                        $method = 'get', $server = ''){
 		
 		$this->countRequests++;
-		
+
 		if( empty( $server ) || !(array_key_exists($server, $this->serverUrl)) )
 			$server = $this->defaultServer;
 		

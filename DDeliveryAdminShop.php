@@ -52,12 +52,19 @@ class DDeliveryAdminShop extends DDeliveryShopEx {
         $orderId = $this->formData['bx_order_id'];
         $params = array('DD_ABOUT' => $comment, 'DD_LOCAL_ID' => $order->localId);
         $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $orderId)))->fetch();
+
+
         if($orderDeliveryTableData) {
             OrderDeliveryTable::update($orderDeliveryTableData['ID'], array('PARAMS' => serialize($params)));
         }else{
             OrderDeliveryTable::add(array('ORDER_ID' => $orderId, 'PARAMS' => serialize($params)));
         }
+        $order = CSaleOrder::GetByID($orderId);
 
+        $arDeliveryResult = CSaleDeliveryHandler::CalculateFull('ddelivery', 'ddelivery:all', $order, CSaleLang::GetLangCurrency(SITE_ID), SITE_ID);
+        if($arDeliveryResult['RESULT'] == 'OK') {
+            CSaleOrder::Update($orderId, array('PRICE_DELIVERY'=>$arDeliveryResult['VALUE']));
+        }
 
     }
 

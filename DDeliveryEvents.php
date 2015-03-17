@@ -528,7 +528,7 @@ class DDeliveryEvents
             $companyNameList[$id] = $APPLICATION->ConvertCharsetArray($company['name'], 'utf-8', SITE_CHARSET);
         }
         $courier = array(45, 29, 23, 27, 28, 20, 35, 36, 30, 31, 22, 43, 17, 48, 46, 14, 41, 13,44, 40, 26, 24, 49, 50,
-            51, 52, 53, 54, 55);
+            51, 52, 53, 54, 55, 58, 61,63, 66);
         $result = array(DDeliverySDK::TYPE_SELF => array(), DDeliverySDK::TYPE_COURIER => array());
         foreach($courier as $companyId) {
             if(isset($companyNameList[$companyId]))
@@ -610,14 +610,20 @@ class DDeliveryEvents
         }
 
         if( substr($_SERVER['PHP_SELF'], 0, 14) == '/bitrix/admin/' &&
-           substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php') {
+            substr($_SERVER['PHP_SELF'], 0, 33) != '/bitrix/admin/sale_order_new.php' &&
+            substr($_SERVER['PHP_SELF'], 0, 42) != '/bitrix/admin/ddelivery.ddelivery_ajax.php') {
             return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ADMIN_PAGE'));
         }
 
 
-        if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php'){
-            $cmsOrderId = $_REQUEST['ORDER_AJAX'] =='Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
+        if( substr($_SERVER['PHP_SELF'], 0, 33) == '/bitrix/admin/sale_order_new.php' ||
+            substr($_SERVER['PHP_SELF'], 0, 42) == '/bitrix/admin/ddelivery.ddelivery_ajax.php'){
+            if(isset($_REQUEST['bx_order_id'])) {
+                $cmsOrderId = $_REQUEST['bx_order_id'];
 
+            }else{
+                $cmsOrderId = $_REQUEST['ORDER_AJAX'] == 'Y' ? $_REQUEST['id'] : $_REQUEST['ID'];
+            }
             $orderDeliveryTableData = OrderDeliveryTable::getList(array('filter' => array('ORDER_ID' => $cmsOrderId)))->fetch();
             if(empty($orderDeliveryTableData)) {
                 return array( "RESULT" => "ERROR", 'TEXT' => GetMessage('DDELIVERY_ERROR_ORDER'));
